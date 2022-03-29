@@ -52,7 +52,7 @@ with Session(engine) as session:
         source_ip='10.0.0.1',
         destination_ip='8.8.8.8',
         protocol='udp',
-        port='53',
+        port_number='53',
         rule_name='google-dns'
     )
 
