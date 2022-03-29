@@ -46,3 +46,16 @@ class FIREWALL_ROUTES(Base):
 
 engine = create_engine("sqlite://", echo=True, future=True)
 Base.metadata.create_all(engine)
+
+with Session(engine) as session:
+    asa_rule = FIREWALL_RULES(
+        source_ip='10.0.0.1',
+        destination_ip='8.8.8.8',
+        protocol='udp',
+        port='53',
+        rule_name='google-dns'
+    )
+
+    session.add_all([asa_rule])
+
+    session.commit()
