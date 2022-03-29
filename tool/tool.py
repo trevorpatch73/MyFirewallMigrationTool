@@ -74,13 +74,18 @@ print("---------------------------")
 print("---------------------------")
 print("---------------------------")
 
+with open("C://Users//trevo//Documents//GitHub//ASA-EOX_TO_FMC-FTD_CONVERSION_TOOL//tool//config.txt") as fh:
+    string = fh.readlines()
+
+pattern1 = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+#pattern2 = re.compile(r'(Gateway*)')
+
 count = 0
-for line in Lines:
-    pattern = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
-    string = line.strip()
-    result = re.match(pattern, string)
-    if result:
-        count += 1
-        print("Line{}: {}".format(count, line.strip()))
-    else:
-        pass
+for line in string:
+    line = line.rstrip()
+    condition1 = pattern1.search(line)
+    #condition2 = pattern2.search(line)
+    if condition1:
+        if line != r'^(?!.*Gateway)':
+            count += 1
+            print("Line{}: {}".format(count, line))
