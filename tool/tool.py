@@ -84,22 +84,23 @@ count1 = 0
 
 for line in string:
     line = line.rstrip()
+    clean_line = line.replace(',', '')
     condition1 = pattern1.search(line)
     if condition1:
         count1 += 1
-        #print("Line{}: {}".format(count1, line))
-        lst = line.split(' ')
+        print("Line{}: {}".format(count1, clean_line))
+        lst = clean_line.split(' ')
         count2 = 0
         for element in lst:
-            #print('Line Element{}: {}'.format(count2, element))
+            print('Line Element{}: {}'.format(count2, element))
             count2 += 1
-        with Session(engine) as session:
-            entry = FIREWALL_ROUTES(
-                network_prefix=lst[1],
-                subnet=lst[2],
-                next_hop=lst[3],
-                admin_distance=lst[0],
-                name=(lst[4] + lst[5])
-            )
-            session.add_all([entry])
-            session.commit()
+        # with Session(engine) as session:
+        #    entry = FIREWALL_ROUTES(
+        #        network_prefix=lst[1],
+        #        subnet=lst[2],
+        #        next_hop=lst[3],
+        #        admin_distance=lst[0],
+        #        name=(lst[4] + lst[5])
+        #    )
+        #    session.add_all([entry])
+        #    session.commit()
