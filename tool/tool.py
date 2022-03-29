@@ -70,8 +70,7 @@ with Session(engine) as session:
 
 session = Session(engine)
 
-statement = select(FIREWALL_RULES).where(
-    FIREWALL_RULES.destination_ip.in_(['8.8.8.8']))
+statement = select(FIREWALL_RULES)
 
 for rule in session.scalars(statement):
     print('AND THE RESULTS ARE:')
