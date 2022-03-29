@@ -44,7 +44,7 @@ class FIREWALL_ROUTES(Base):
         return f"FIREWALL_ROUTES(network_prefix={self.network_prefix!r},subnet={self.subnet!r},next_hop={self.next_hop!r},admin_distance={self.admin_distance!r},name={self.name!r})"
 
 
-engine = create_engine("sqlite://", echo=True, future=True)
+engine = create_engine("sqlite://databse.db", echo=True, future=True)
 Base.metadata.create_all(engine)
 
 with Session(engine) as session:
