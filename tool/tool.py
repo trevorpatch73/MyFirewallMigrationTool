@@ -68,10 +68,8 @@ with Session(engine) as session:
 
     session.commit()
 
-session = Session(engine)
+    statement = select(FIREWALL_RULES)
 
-statement = select(FIREWALL_RULES)
-
-for rule in session.scalars(statement):
-    print('AND THE RESULTS ARE:')
-    print(rule)
+    for rule in session.scalars(statement):
+        print('AND THE RESULTS ARE:')
+        print(rule)
