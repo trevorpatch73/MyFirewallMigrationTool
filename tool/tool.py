@@ -1,6 +1,6 @@
 from sqlalchemy import *
 from sqlalchemy.orm import *
-from os import path
+from pathlib import Path
 import secrets
 
 Base = declarative_base()
@@ -60,6 +60,11 @@ Base.metadata.create_all(engine)
 
 #    session.commit()
 
-f = open("config.txt", "r")
-print('CONFIG FILE:')
-print(f.read())
+f = open("C://Users//trevo//Documents//GitHub//ASA-EOX_TO_FMC-FTD_CONVERSION_TOOL//tool//config.txt", "r")
+
+Lines = f.readlines()
+
+count = 0
+for line in Lines:
+    count += 1
+    print("Line{}: {}".format(count, line.strip()))
