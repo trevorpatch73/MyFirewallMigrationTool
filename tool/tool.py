@@ -48,8 +48,16 @@ engine = create_engine("sqlite://", echo=True, future=True)
 Base.metadata.create_all(engine)
 
 with Session(engine) as session:
-    asa_rule = FIREWALL_RULES(
+    entry1 = FIREWALL_RULES(
         source_ip='10.0.0.1',
+        destination_ip='8.8.8.8',
+        protocol='udp',
+        port_number='53',
+        rule_name='google-dns'
+    )
+
+    entry2 = FIREWALL_RULES(
+        source_ip='10.0.0.2',
         destination_ip='8.8.8.8',
         protocol='udp',
         port_number='53',
@@ -59,3 +67,11 @@ with Session(engine) as session:
     session.add_all([asa_rule])
 
     session.commit()
+
+session = Session(engine)
+
+statement = select(FIREWALL_RULES).where(
+    FIREWALL_RULES.destination_ip.in_(['8.8.8.8']))
+
+for rule in session.scalars(statement):
+    print(rule)
