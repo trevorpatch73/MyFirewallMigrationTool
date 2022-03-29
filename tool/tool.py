@@ -77,15 +77,29 @@ print("---------------------------")
 with open("C://Users//trevo//Documents//GitHub//ASA-EOX_TO_FMC-FTD_CONVERSION_TOOL//tool//config.txt") as fh:
     string = fh.readlines()
 
-pattern1 = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
-#pattern2 = re.compile(r'(Gateway*)')
+pattern1 = re.compile(
+    r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
 
-count = 0
+count1 = 0
+
 for line in string:
     line = line.rstrip()
     condition1 = pattern1.search(line)
-    #condition2 = pattern2.search(line)
     if condition1:
-        if line != r'^(?!.*Gateway)':
-            count += 1
-            print("Line{}: {}".format(count, line))
+        count1 += 1
+        #print("Line{}: {}".format(count1, line))
+        lst = line.split(' ')
+        count2 = 0
+        for element in lst:
+            #print('Line Element{}: {}'.format(count2, element))
+            count2 += 1
+        with Session(engine) as session:
+            entry = FIREWALL_ROUTES(
+                network_prefix=lst[1],
+                subnet=lst[2],
+                next_hop=lst[3],
+                admin_distance=lst[0],
+                name=(lst[4] + lst[5])
+            )
+            session.add_all([entry])
+            session.commit()
