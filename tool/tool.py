@@ -45,3 +45,4 @@ class FIREWALL_ROUTES(Base):
 
 
 engine = create_engine("sqlite://", echo=True, future=True)
+Base.metadata.create_all(engine)
