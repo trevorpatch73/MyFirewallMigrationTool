@@ -64,7 +64,7 @@ with Session(engine) as session:
         rule_name='google-dns'
     )
 
-    session.add_all([asa_rule])
+    session.add_all([entry1, entry2])
 
     session.commit()
 
@@ -74,4 +74,5 @@ statement = select(FIREWALL_RULES).where(
     FIREWALL_RULES.destination_ip.in_(['8.8.8.8']))
 
 for rule in session.scalars(statement):
+    print('AND THE RESULTS ARE:')
     print(rule)
