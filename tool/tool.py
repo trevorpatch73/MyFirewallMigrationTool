@@ -2,6 +2,7 @@ from sqlalchemy import *
 from sqlalchemy.orm import *
 from pathlib import Path
 import secrets
+import re
 
 Base = declarative_base()
 
@@ -68,3 +69,18 @@ count = 0
 for line in Lines:
     count += 1
     print("Line{}: {}".format(count, line.strip()))
+
+print("---------------------------")
+print("---------------------------")
+print("---------------------------")
+
+count = 0
+for line in Lines:
+    pattern = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+    string = line.strip()
+    result = re.match(pattern, string)
+    if result:
+        count += 1
+        print("Line{}: {}".format(count, line.strip()))
+    else:
+        pass
