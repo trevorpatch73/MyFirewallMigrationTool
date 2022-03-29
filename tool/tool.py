@@ -47,29 +47,19 @@ class FIREWALL_ROUTES(Base):
 engine = create_engine("sqlite:///databse.db", echo=True, future=True)
 Base.metadata.create_all(engine)
 
-with Session(engine) as session:
-    entry1 = FIREWALL_RULES(
-        source_ip='10.0.0.1',
-        destination_ip='8.8.8.8',
-        protocol='udp',
-        port_number='53',
-        rule_name='google-dns'
-    )
+# with Session(engine) as session:
+#    entry1 = FIREWALL_RULES(
+#        source_ip='10.0.0.1',
+#        destination_ip='8.8.8.8',
+#        protocol='udp',
+#        port_number='53',
+#        rule_name='google-dns'
+#    )
 
-    entry2 = FIREWALL_RULES(
-        source_ip='10.0.0.2',
-        destination_ip='8.8.8.8',
-        protocol='udp',
-        port_number='53',
-        rule_name='google-dns'
-    )
+#    session.add_all([entry1, entry2])
 
-    session.add_all([entry1, entry2])
+#    session.commit()
 
-    session.commit()
-
-    statement = select(FIREWALL_RULES)
-
-    for rule in session.scalars(statement):
-        print('AND THE RESULTS ARE:')
-        print(rule)
+f = open("config.txt", "r")
+print('CONFIG FILE:')
+print(f.read())
