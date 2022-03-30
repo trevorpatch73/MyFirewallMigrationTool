@@ -40,7 +40,8 @@ db.init_app(app)
 class FIREWALL_INVENTORY_TABLE(db.Model):
     __tablename__ = "FIREWALL_INVENTORY_TABLE"
 
-    db_serial_number = db.Column(db.String(200), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    db_serial_number = db.Column(db.String(200), nullable=False, unique=True)
     db_host_name = db.Column(db.String(300), nullable=True, unique=True)
     db_mgmt_ip = db.Column(db.String(20), nullable=True, unique=True)
     db_make = db.Column(db.String(300), nullable=True, unique=True)
@@ -66,7 +67,7 @@ class FIREWALL_RULES_TABLE(db.Model):
         'FIREWALL_INVENTORY_TABLE.db_serial_number'), nullable=False)
 
 
-class FIREWALL_NATS_MODEL(db.Model):
+class FIREWALL_NATS_TABLE(db.Model):
     __tablename__ = "FIREWALL_NATS_TABLE"
 
     db_type = db.Column(db.String(10), primary_key=True)
@@ -192,11 +193,12 @@ def FIREWALL_INVENTORY():
     if request.method == 'POST':
         if form.validate_on_submit():
             serial_number = form.fm_serial_number.data
+            print(serial_number)
             host_name = form.fm_host_name.data
             mgmt_ip = form.fm_mgmt_ip.data
             make = form.fm_make.data
             model = form.fm_model.data
-            fw_applicance = FIREWALL_INVENTORY_TABLE.query.filer_by(
+            fw_applicance = FIREWALL_INVENTORY_TABLE.query.filter_by(
                 db_serial_number=serial_number).first()
             if fw_applicance is None:
                 entry = FIREWALL_INVENTORY_TABLE(
