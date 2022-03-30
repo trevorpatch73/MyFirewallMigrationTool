@@ -188,6 +188,84 @@ def FIREWALL_INVENTORY():
     state = None
     signal = None
     form = FIREWALL_INVENTORY_FORM()
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            serial_number = form.fm_serial_number.data
+            host_name = form.fm_host_name.data
+            mgmt_ip = form.fm_mgmt_ip.data
+            make = form.fm_make.data
+            model = form.fm_model.data
+            fw_applicance = FIREWALL_INVENTORY_TABLE.query.filer_by(
+                db_serial_number=serial_number).first()
+            if fw_applicance is None:
+                entry = FIREWALL_INVENTORY_TABLE(
+                    db_serial_number=serial_number,
+                    db_host_name=host_name,
+                    db_mgmt_ip=mgmt_ip,
+                    db_make=make,
+                    db_model=model,
+                    db_state='new'
+                )
+                db.session.add(entry)
+                db.session.commit()
+                signal = 'info'
+                flash(
+                    f"New Firewall, {serial_number}:{host_name}, successfully added to database!")
+                return redirect(url_for('FIREWALL_INVENTORY'))
+            else:
+
+                if host_name != '' and serial_number != '':
+                    fw_applicance.db_host_name = host_name
+                    db.session.commit()
+                    signal = 'info'
+                    flash(
+                        f"Hostname, {host_name}, for firewall, {serial_number}, has been updated")
+                if mgmt_ip != '' and serial_number != '':
+                    fw_applicance.db_mgmt_ip = mgmt_ip
+                    db.session.commit()
+                    signal = 'info'
+                    flash(
+                        f"Management IP, {mgmt_ip}, for firewall, {serial_number}, has been updated")
+                if make != '' and serial_number != '':
+                    fw_applicance.db_make = make
+                    db.session.commit()
+                    signal = 'info'
+                    flash(
+                        f"Make, {make}, for firewall, {serial_number}, has been updated")
+                if model != '' and serial_number != '':
+                    fw_applicance.db_model = model
+                    db.session.commit()
+                    signal = 'info'
+                    flash(
+                        f"Model, {model}, for firewall, {serial_number}, has been updated")
+
+                if host_name != '' and serial_number == '':
+                    pass
+                    signal = 'error'
+                    flash(
+                        "Serial number, primary key, cannot be null when updating the hostname.")
+                if mgmt_ip != '' and serial_number == '':
+                    pass
+                    signal = 'error'
+                    flash(
+                        "Serial number, primary key, cannot be null when updating the management ip.")
+                if make != '' and serial_number == '':
+                    pass
+                    signal = 'error'
+                    flash(
+                        "Serial number, primary key, cannot be null when updating the make.")
+                if model != '' and serial_number == '':
+                    pass
+                    signal = 'error'
+                    flash(
+                        "Serial number, primary key, cannot be null when updating the model.")
+                if serial_number != '' and host_name == '' and mgmt_ip == '' and make == '' and model == '':
+                    pass
+                    signal = 'error'
+                    flash(
+                        "Serial Number is the Primary Key for the Firewall Inventory Table. You cannot only update this field.")
+
     return render_template(
         "fw_inv.html",
         form=form,
