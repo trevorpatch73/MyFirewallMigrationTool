@@ -88,8 +88,8 @@ class FIREWALL_ROUTES_TABLE(db.Model):
     db_subnet = db.Column(db.String(20), primary_key=True)
     db_next_hop = db.Column(db.String(20), primary_key=True)
     db_admin_distance = db.Column(db.String(4), primary_key=True)
-    db_name = db.Column(db.String(300), nullable=True, unique=True)
-    db_state = db.Column(db.String(50), nullable=True, unique=True)
+    db_name = db.Column(db.String(300), nullable=True)
+    db_state = db.Column(db.String(50), nullable=True)
 
     db_serial_number = db.Column(db.String, db.ForeignKey(
         'FIREWALL_INVENTORY_TABLE.db_serial_number'), nullable=False)
@@ -323,6 +323,13 @@ def FIREWALL_NATS_TEXT():
 def FIREWALL_ROUTES_TEXT():
     serial_number = None
     input_txt = None
+    network_prefix = None
+    subnet = None
+    next_hop = None
+    admin_distance = None
+    name = None
+    state = None
+
     signal = None
     form = FIREWALL_ROUTES_TEXT_FORM()
 
@@ -332,8 +339,9 @@ def FIREWALL_ROUTES_TEXT():
             input_txt = form.fm_input_txt.data
             inventory = FIREWALL_INVENTORY_TABLE.query.filter_by(
                 db_serial_number=serial_number).first()
-            rules = FIREWALL_ROUTES_TABLE.query.filter_by(
+            routes = FIREWALL_ROUTES_TABLE.query.filter_by(
                 db_serial_number=serial_number).all()
+            print(routes)
             if inventory is not None:
                 print("----------------------")
                 print("RAW STRING")
@@ -346,19 +354,53 @@ def FIREWALL_ROUTES_TEXT():
                 double_dot_dec_pattern = re.compile(
                     r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
 
-                rows = input_txt.split('\n')
+                clean_input = input_txt.replace(',', '')
+                rows = clean_input.split('\n')
                 row_count = 0
                 for row in rows:
                     result_filter = double_dot_dec_pattern.search(row)
                     if result_filter:
                         print(f"Row[{row_count}]: {row}")
                         row_count += 1
-                        clean_row = row.replace(',', '')
-                        elements = clean_row.split(' ')
+
+                        elements = row.split(' ')
                         element_count = 0
                         for element in elements:
                             print(f"Element[{element_count}]: {element}")
                             element_count += 1
+
+                        network_prefix = elements[1]
+                        print(
+                            f"Network Prefix, {network_prefix}, is mapped to element[1]")
+                        subnet = elements[2]
+                        print(f"Subnet, {subnet}, is mapped to element[2]")
+                        next_hop = elements[5]
+                        print(
+                            f"Next Hop, {next_hop}, is mapped to element[5]")
+                        admin_distance = elements[3]
+                        print(
+                            f"Admin_distance, {admin_distance}, is mapped to element[3]")
+                        name = elements[6]
+                        print(
+                            f"Name, {name}, is mapped to element[6]")
+                        state = 'new'
+
+                        if routes is None:
+                            entry = FIREWALL_ROUTES_TABLE(
+                                db_network_prefix=network_prefix,
+                                db_subnet=subnet,
+                                db_next_hop=next_hop,
+                                db_admin_distance=admin_distance,
+                                db_name=name,
+                                db_state=state
+                            )
+                            db.session.add(entry)
+                            db.session.commit()
+                            signal = 'info'
+                            flash(
+                                f"New rule added to database for firewall, {serial_number}")
+                        else:
+                            pass
 
                 return redirect(url_for('FIREWALL_ROUTES_TEXT'))
             else:
