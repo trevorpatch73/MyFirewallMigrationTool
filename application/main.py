@@ -41,7 +41,7 @@ db.init_app(app)
 class FIREWALL_INVENTORY_TABLE(db.Model):
     __tablename__ = "FIREWALL_INVENTORY_TABLE"
 
-    #id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     db_serial_number = db.Column(db.String(200), primary_key=True)
     db_host_name = db.Column(db.String(300), nullable=True)
     db_mgmt_ip = db.Column(db.String(20), nullable=True)
@@ -120,23 +120,24 @@ class FIREWALL_INVENTORY_FORM(FlaskForm):
 
 
 class FIREWALL_RULES_TEXT_FORM(FlaskForm):
-    firewallList = db.execute(
-        "SELECT * FROM serialnumbers order by db_serial_number")
-
-    fm_firewall_choice = SelectMultipleField(
-        u'Select A Firewall', choices=firewallList)
+    fm_serial_number = StringField(
+        'Serial Number: ', [validators.Length(min=1, max=200)])
     fm_input_txt = StringField(
         'Copy/Paste CLI Section: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
     submit = SubmitField('Submit')
 
 
 class FIREWALL_NATS_TEXT_FORM(FlaskForm):
+    fm_serial_number = StringField(
+        'Serial Number: ', [validators.Length(min=1, max=200)])
     fm_input_txt = StringField(
         'Copy/Paste CLI Section: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
     submit = SubmitField('Submit')
 
 
 class FIREWALL_ROUTES_TEXT_FORM(FlaskForm):
+    fm_serial_number = StringField(
+        'Serial Number: ', [validators.Length(min=1, max=200)])
     fm_input_txt = StringField(
         'Copy/Paste CLI Section: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
     submit = SubmitField('Submit')
@@ -148,24 +149,24 @@ class FIREWALL_ROUTES_TEXT_FORM(FlaskForm):
 
 
 # Invalid URI & Error Handling
-@app.errorhandler(404)
+@ app.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html"), 404
 
 
-@app.errorhandler(500)
+@ app.errorhandler(500)
 def internal_server_error(e):
     return render_template("500.html"), 500
 
 
 # Server Root Redirect towards home
-@app.route("/")
+@ app.route("/")
 def root():
     return redirect(url_for("home"))
 
 
 # Home Directory
-@app.route("/home", methods=['GET', 'POST'],)
+@ app.route("/home", methods=['GET', 'POST'],)
 def home():
     signal = None
 
@@ -186,7 +187,7 @@ def home():
 
 
 # Firewall Inventory
-@app.route("/firewall/inventory", methods=['GET', 'POST'],)
+@ app.route("/firewall/inventory", methods=['GET', 'POST'],)
 def FIREWALL_INVENTORY():
     serial_number = None
     host_name = None
@@ -279,14 +280,14 @@ def FIREWALL_INVENTORY():
 # Firewall Rules - Text Input
 @app.route("/firewall/rules/text", methods=['GET', 'POST'],)
 def FIREWALL_RULES_TEXT():
-    firewall_choice = None
+    serial_number = None
     input_txt = None
     signal = None
     form = FIREWALL_RULES_TEXT_FORM()
 
     if request.method == 'POST':
         if form.validate_on_submit():
-            firewall_choice = form.fm_firewall_choice.data
+            serial_number = form.fm_serial_number.data
             input_txt = form.fm_input_txt.data
 
     return render_template(

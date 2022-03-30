@@ -2,29 +2,12 @@
 {% block title %}ASA TO FTD - Firewall Rules - Text Input{% endblock %}
 {% block content %}
 
-Choose a Firewall<SELECT name="firewall">
-    {% for f in firewallList %}
-        <OPTION value={{f.db_serial_number}}>{{f.db_host}}</OPTION>
-    {% endfor %}
-</SELECT>
-
 <h1>Firewall Rules - Text Input</h1>
 <form method = "POST">
-
     <div class="shadow-lg p-3 mb-5 bg-body rounded bg-dark text-light">
-        <div class="dropdown">
-            <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-              Choose A Firewall
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                
-                    {% for f in firewallList %}
-                        <li><a class="list-group-item" <SELECT name="firewall"> </SELECT>value="{{f.db_serial_number}}">{{f.db_host}}</SELECT></a></li>
-                    {% endfor %}
-
-            </ul>
-        </div>
         {{ form.hidden_tag() }}
+        {{ form.fm_serial_number.label(class="form-label") }}
+        {{ form.fm_serial_number(class="form-control") }}    
         <br/>
         {{ form.fm_input_txt.label(class="form-label") }}
         {{ form.fm_input_txt(class="form-control") }}            
