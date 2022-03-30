@@ -6,6 +6,9 @@
 <form method = "POST">
     <div class="shadow-lg p-3 mb-5 bg-body rounded bg-dark text-light">
         {{ form.hidden_tag() }}
+        {{ form.fm_serial_number.label(class="form-label") }}
+        {{ form.fm_serial_number(class="form-control") }}   
+        {{ form.hidden_tag() }}
         <br/>
         {{ form.fm_input_txt.label(class="form-label") }}
         {{ form.fm_input_txt(class="form-control") }}     

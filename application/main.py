@@ -61,8 +61,8 @@ class FIREWALL_RULES_TABLE(db.Model):
     db_destination_ip = db.Column(db.String(20), primary_key=True)
     db_protocol = db.Column(db.String(5), primary_key=True)
     db_port_number = db.Column(db.String(7), primary_key=True)
-    db_rule_name = db.Column(db.String(300), nullable=True, unique=True)
-    db_state = db.Column(db.String(50), nullable=True, unique=True)
+    db_rule_name = db.Column(db.String(300), nullable=True)
+    db_state = db.Column(db.String(50), nullable=True)
 
     db_serial_number = db.Column(db.String, db.ForeignKey(
         'FIREWALL_INVENTORY_TABLE.db_serial_number'), nullable=False)
@@ -300,8 +300,16 @@ def FIREWALL_RULES_TEXT():
 # Firewall NATs - Text Input
 @app.route("/firewall/nats/text", methods=['GET', 'POST'],)
 def FIREWALL_NATS_TEXT():
+    serial_number = None
+    input_txt = None
     signal = None
     form = FIREWALL_NATS_TEXT_FORM()
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+
+            serial_number = form.fm_serial_number.data
+            input_txt = form.fm_input_txt.data
 
     return render_template(
         "fw_nats_text.html",
@@ -310,14 +318,56 @@ def FIREWALL_NATS_TEXT():
     )
 
 
-# Firewall RULES - Text Input
-@app.route("/firewall/rules/text", methods=['GET', 'POST'],)
+# Firewall routes - Text Input
+@app.route("/firewall/routes/text", methods=['GET', 'POST'],)
 def FIREWALL_ROUTES_TEXT():
+    serial_number = None
+    input_txt = None
     signal = None
     form = FIREWALL_ROUTES_TEXT_FORM()
 
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            serial_number = form.fm_serial_number.data
+            input_txt = form.fm_input_txt.data
+            inventory = FIREWALL_INVENTORY_TABLE.query.filter_by(
+                db_serial_number=serial_number).first()
+            rules = FIREWALL_ROUTES_TABLE.query.filter_by(
+                db_serial_number=serial_number).all()
+            if inventory is not None:
+                print("----------------------")
+                print("RAW STRING")
+                print("----------------------")
+                print(input_txt)
+
+                print("----------------------")
+                print("PATTERN FILTER")
+                print("----------------------")
+                double_dot_dec_pattern = re.compile(
+                    r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+
+                rows = input_txt.split('\n')
+                row_count = 0
+                for row in rows:
+                    result_filter = double_dot_dec_pattern.search(row)
+                    if result_filter:
+                        print(f"Row[{row_count}]: {row}")
+                        row_count += 1
+                        clean_row = row.replace(',', '')
+                        elements = clean_row.split(' ')
+                        element_count = 0
+                        for element in elements:
+                            print(f"Element[{element_count}]: {element}")
+                            element_count += 1
+
+                return redirect(url_for('FIREWALL_ROUTES_TEXT'))
+            else:
+                signal = 'error'
+                flash(
+                    f"Serial Number, {serial_number}, is not in the database. Please add the inventory first.")
+
     return render_template(
-        "fw_rules_text.html",
+        "fw_routes_text.html",
         form=form,
         signal=signal
     )
