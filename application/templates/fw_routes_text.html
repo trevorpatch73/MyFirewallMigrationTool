@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}ASA TO FTD - Firewall Routes - Text Input{% endblock %}
+{% block content %}
+
+<h1>Firewall Routes - Text Input</h1>
+<form method = "POST">
+    <div class="shadow-lg p-3 mb-5 bg-body rounded bg-dark text-light">
+        {{ form.hidden_tag() }}
+        <br/>
+        {{ form.fm_input_txt.label(class="form-label") }}
+        {{ form.fm_input_txt(class="form-control") }}     
+              
+        <br/><br/>
+    </div>
+    {{ form.submit(class="btn btn-dark") }}  
+</form>
+
+{% endblock %}
