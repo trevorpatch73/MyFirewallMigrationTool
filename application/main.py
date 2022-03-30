@@ -9,6 +9,7 @@ from os import path
 from pathlib import Path
 from time import sleep
 from datetime import datetime
+from typing import List
 import requests
 import json
 import re
@@ -16,7 +17,7 @@ import secrets
 
 from flask import Flask, render_template, redirect, url_for, render_template, request, session, flash
 from flask_wtf import FlaskForm
-from wtforms import Form, BooleanField, StringField, PasswordField, validators, SubmitField
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, SubmitField, SelectMultipleField
 from wtforms.validators import DataRequired
 from wtforms.widgets import TextArea
 from flask_sqlalchemy import SQLAlchemy
@@ -119,6 +120,11 @@ class FIREWALL_INVENTORY_FORM(FlaskForm):
 
 
 class FIREWALL_RULES_TEXT_FORM(FlaskForm):
+    firewallList = db.execute(
+        "SELECT * FROM serialnumbers order by db_serial_number")
+
+    fm_firewall_choice = SelectMultipleField(
+        u'Select A Firewall', choices=firewallList)
     fm_input_txt = StringField(
         'Copy/Paste CLI Section: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
     submit = SubmitField('Submit')
@@ -273,9 +279,15 @@ def FIREWALL_INVENTORY():
 # Firewall Rules - Text Input
 @app.route("/firewall/rules/text", methods=['GET', 'POST'],)
 def FIREWALL_RULES_TEXT():
+    firewall_choice = None
     input_txt = None
     signal = None
     form = FIREWALL_RULES_TEXT_FORM()
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            firewall_choice = form.fm_firewall_choice.data
+            input_txt = form.fm_input_txt.data
 
     return render_template(
         "fw_rules_text.html",
