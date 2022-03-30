@@ -160,40 +160,58 @@ def root():
 # Home Directory
 @app.route("/home", methods=['GET', 'POST'],)
 def home():
+    signal = None
+
+    if request.method == 'POST':
+        if request.form['submit_button'] == 'Firewall Inventory':
+            return redirect(url_for('FIREWALL_INVENTORY'))
+        if request.form['submit_button'] == 'Firewall Rules':
+            return redirect(url_for('FIREWALL_RULES_TEXT'))
+        if request.form['submit_button'] == 'Firewall NATs':
+            return redirect(url_for('FIREWALL_NATS_TEXT'))
+        if request.form['submit_button'] == 'Firewall Routes':
+            return redirect(url_for('FIREWALL_ROUTES_TEXT'))
+
     return render_template(
         "home.html",
     )
 
+
 # Firewall Inventory
-
-
 @app.route("/firewall/inventory", methods=['GET', 'POST'],)
 def FIREWALL_INVENTORY():
+    serial_number = None
+    host_name = None
+    mgmt_ip = None
+    make = None
+    model = None
+    state = None
+    signal = None
+    form = FIREWALL_INVENTORY_FORM()
     return render_template(
         "fw_inv.html",
+        form=form,
+        signal=signal
     )
 
+
 # Firewall Rules - Text Input
-
-
 @app.route("/firewall/rules/text", methods=['GET', 'POST'],)
 def FIREWALL_RULES_TEXT():
     return render_template(
         "fw_rules_text.html",
     )
 
+
 # Firewall NATs - Text Input
-
-
 @app.route("/firewall/nats/text", methods=['GET', 'POST'],)
 def FIREWALL_NATS_TEXT():
     return render_template(
         "fw_nats_text.html",
     )
 
+
 # Firewall RULES - Text Input
-
-
 @app.route("/firewall/rules/text", methods=['GET', 'POST'],)
 def FIREWALL_ROUTES_TEXT():
     return render_template(
