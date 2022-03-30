@@ -198,24 +198,40 @@ def FIREWALL_INVENTORY():
 # Firewall Rules - Text Input
 @app.route("/firewall/rules/text", methods=['GET', 'POST'],)
 def FIREWALL_RULES_TEXT():
+    input_txt = None
+    signal = None
+    form = FIREWALL_RULES_TEXT_FORM()
+
     return render_template(
         "fw_rules_text.html",
+        form=form,
+        signal=signal
     )
 
 
 # Firewall NATs - Text Input
 @app.route("/firewall/nats/text", methods=['GET', 'POST'],)
 def FIREWALL_NATS_TEXT():
+    signal = None
+    form = FIREWALL_NATS_TEXT_FORM()
+
     return render_template(
         "fw_nats_text.html",
+        form=form,
+        signal=signal
     )
 
 
 # Firewall RULES - Text Input
 @app.route("/firewall/rules/text", methods=['GET', 'POST'],)
 def FIREWALL_ROUTES_TEXT():
+    signal = None
+    form = FIREWALL_ROUTES_TEXT_FORM()
+
     return render_template(
         "fw_rules_text.html",
+        form=form,
+        signal=signal
     )
 
 
