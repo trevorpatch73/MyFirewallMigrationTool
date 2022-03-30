@@ -62,7 +62,7 @@ class FIREWALL_RULES_TABLE(db.Model):
     db_rule_name = db.Column(db.String(300), nullable=True, unique=True)
     db_state = db.Column(db.String(50), nullable=True, unique=True)
 
-    db_serial_number = db.Column(db.string, db.ForeignKey(
+    db_serial_number = db.Column(db.String, db.ForeignKey(
         'FIREWALL_INVENTORY_TABLE.db_serial_number'), nullable=False)
 
 
@@ -75,7 +75,7 @@ class FIREWALL_NATS_MODEL(db.Model):
     db_rule_name = db.Column(db.String(300), nullable=True, unique=True)
     db_state = db.Column(db.String(50), nullable=True, unique=True)
 
-    db_serial_number = db.Column(db.string, db.ForeignKey(
+    db_serial_number = db.Column(db.String, db.ForeignKey(
         'FIREWALL_INVENTORY_TABLE.db_serial_number'), nullable=False)
 
 
@@ -89,7 +89,7 @@ class FIREWALL_ROUTES_TABLE(db.Model):
     db_name = db.Column(db.String(300), nullable=True, unique=True)
     db_state = db.Column(db.String(50), nullable=True, unique=True)
 
-    db_serial_number = db.Column(db.string, db.ForeignKey(
+    db_serial_number = db.Column(db.String, db.ForeignKey(
         'FIREWALL_INVENTORY_TABLE.db_serial_number'), nullable=False)
 
 
@@ -195,7 +195,7 @@ def FIREWALL_NATS_TEXT():
 
 
 @app.route("/firewall/rules/text", methods=['GET', 'POST'],)
-def FIREWALL_RULES_TEXT():
+def FIREWALL_ROUTES_TEXT():
     return render_template(
         "fw_rules_text.html",
     )
