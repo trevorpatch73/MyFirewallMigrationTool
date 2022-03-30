@@ -112,7 +112,7 @@ class FIREWALL_INVENTORY_FORM(FlaskForm):
     fm_mgmt_ip = StringField(
         'Management IP: ', [validators.Length(min=1, max=20)])
     fm_make = StringField('Make: ', [validators.Length(min=1, max=300)])
-    fm_make = StringField('Model: ', [validators.Length(min=1, max=300)])
+    fm_model = StringField('Model: ', [validators.Length(min=1, max=300)])
     submit = SubmitField('Submit')
 
 
@@ -132,3 +132,76 @@ class FIREWALL_ROUTES_TEXT_FORM(FlaskForm):
     fm_input_txt = StringField(
         'Serial Number: ', [validators.Length(min=1, max=1000000)])
     submit = SubmitField('Submit')
+
+
+########################
+### ROUTE DECORATORS ###
+########################
+
+
+# Invalid URI & Error Handling
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template("500.html"), 500
+
+
+# Server Root Redirect towards home
+@app.route("/")
+def root():
+    return redirect(url_for("home"))
+
+
+# Home Directory
+@app.route("/home", methods=['GET', 'POST'],)
+def home():
+    return render_template(
+        "home.html",
+    )
+
+# Firewall Inventory
+
+
+@app.route("/firewall/inventory", methods=['GET', 'POST'],)
+def FIREWALL_INVENTORY():
+    return render_template(
+        "fw_inv.html",
+    )
+
+# Firewall Rules - Text Input
+
+
+@app.route("/firewall/rules/text", methods=['GET', 'POST'],)
+def FIREWALL_RULES_TEXT():
+    return render_template(
+        "fw_rules_text.html",
+    )
+
+# Firewall NATs - Text Input
+
+
+@app.route("/firewall/nats/text", methods=['GET', 'POST'],)
+def FIREWALL_NATS_TEXT():
+    return render_template(
+        "fw_nats_text.html",
+    )
+
+# Firewall RULES - Text Input
+
+
+@app.route("/firewall/rules/text", methods=['GET', 'POST'],)
+def FIREWALL_RULES_TEXT():
+    return render_template(
+        "fw_rules_text.html",
+    )
+
+
+########################
+### START WEB SERVER ###
+########################
+if __name__ == "__main__":
+    app.run(debug=True)
