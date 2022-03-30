@@ -16,9 +16,9 @@ import secrets
 
 from flask import Flask, render_template, redirect, url_for, render_template, request, session, flash
 from flask_wtf import FlaskForm
-from wtforms import *
-from wtforms.validators import *
-from wtforms.widgets import *
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, SubmitField
+from wtforms.validators import DataRequired
+from wtforms.widgets import TextArea
 from flask_sqlalchemy import SQLAlchemy
 
 DB_NAME = 'sqlite-firewall.db'
