@@ -40,13 +40,13 @@ db.init_app(app)
 class FIREWALL_INVENTORY_TABLE(db.Model):
     __tablename__ = "FIREWALL_INVENTORY_TABLE"
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    db_serial_number = db.Column(db.String(200), nullable=False, unique=True)
-    db_host_name = db.Column(db.String(300), nullable=True, unique=True)
-    db_mgmt_ip = db.Column(db.String(20), nullable=True, unique=True)
-    db_make = db.Column(db.String(300), nullable=True, unique=True)
-    db_model = db.Column(db.String(300), nullable=True, unique=True)
-    db_state = db.Column(db.String(50), nullable=True, unique=True)
+    #id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    db_serial_number = db.Column(db.String(200), primary_key=True)
+    db_host_name = db.Column(db.String(300), nullable=True)
+    db_mgmt_ip = db.Column(db.String(20), nullable=True)
+    db_make = db.Column(db.String(300), nullable=True)
+    db_model = db.Column(db.String(300), nullable=True)
+    db_state = db.Column(db.String(50), nullable=True)
 
     FIREWALL_RULES_TABLE = db.relationship('FIREWALL_RULES_TABLE')
     FIREWALL_NATS_TABLE = db.relationship('FIREWALL_NATS_TABLE')
@@ -95,7 +95,7 @@ class FIREWALL_ROUTES_TABLE(db.Model):
 
 
 # Create Database if it doesn't exist
-if not path.exists('sqlite.db'):
+if not path.exists('sqlite-firewall.db'):
     db.create_all()
     print('Created Database!')
 else:
@@ -110,11 +110,11 @@ class FIREWALL_INVENTORY_FORM(FlaskForm):
     fm_serial_number = StringField(
         'Serial Number: ', [validators.Length(min=1, max=200)])
     fm_host_name = StringField(
-        'Hostname: ', [validators.Length(min=1, max=300)])
+        'Hostname: ', [validators.Length(min=0, max=300)])
     fm_mgmt_ip = StringField(
-        'Management IP: ', [validators.Length(min=1, max=20)])
-    fm_make = StringField('Make: ', [validators.Length(min=1, max=300)])
-    fm_model = StringField('Model: ', [validators.Length(min=1, max=300)])
+        'Management IP: ', [validators.Length(min=0, max=20)])
+    fm_make = StringField('Make: ', [validators.Length(min=0, max=300)])
+    fm_model = StringField('Model: ', [validators.Length(min=0, max=300)])
     submit = SubmitField('Submit')
 
 
@@ -175,6 +175,7 @@ def home():
 
     return render_template(
         "home.html",
+        signal=signal
     )
 
 
@@ -193,7 +194,6 @@ def FIREWALL_INVENTORY():
     if request.method == 'POST':
         if form.validate_on_submit():
             serial_number = form.fm_serial_number.data
-            print(serial_number)
             host_name = form.fm_host_name.data
             mgmt_ip = form.fm_mgmt_ip.data
             make = form.fm_make.data
@@ -243,27 +243,22 @@ def FIREWALL_INVENTORY():
                         f"Model, {model}, for firewall, {serial_number}, has been updated")
 
                 if host_name != '' and serial_number == '':
-                    pass
                     signal = 'error'
                     flash(
                         "Serial number, primary key, cannot be null when updating the hostname.")
                 if mgmt_ip != '' and serial_number == '':
-                    pass
                     signal = 'error'
                     flash(
                         "Serial number, primary key, cannot be null when updating the management ip.")
                 if make != '' and serial_number == '':
-                    pass
                     signal = 'error'
                     flash(
                         "Serial number, primary key, cannot be null when updating the make.")
                 if model != '' and serial_number == '':
-                    pass
                     signal = 'error'
                     flash(
                         "Serial number, primary key, cannot be null when updating the model.")
                 if serial_number != '' and host_name == '' and mgmt_ip == '' and make == '' and model == '':
-                    pass
                     signal = 'error'
                     flash(
                         "Serial Number is the Primary Key for the Firewall Inventory Table. You cannot only update this field.")
