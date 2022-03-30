@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}ASA TO FTD - Home{% endblock %}
+{% block content %}
+
+<h1>Directory</h1>
+<form method = "POST">
+    <div class="container shadow-lg p-3 mb-5 bg-body rounded bg-dark text-light">
+        {% if state == 'provision_controller'%}
+        <input type="submit" name="submit_button" class="btn btn-info" value="Firewall Inventory">
+        <input type="submit" name="submit_button" class="btn btn-info" value="Firewall Rules">
+        <input type="submit" name="submit_button" class="btn btn-info" value="Firewall NATs">
+        <input type="submit" name="submit_button" class="btn btn-info" value="Firewall Routes">
+        <br/><br/>
+    </div>
+</form>
+
+{% endblock %}
