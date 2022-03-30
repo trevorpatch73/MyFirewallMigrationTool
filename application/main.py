@@ -119,19 +119,19 @@ class FIREWALL_INVENTORY_FORM(FlaskForm):
 
 class FIREWALL_RULES_TEXT_FORM(FlaskForm):
     fm_input_txt = StringField(
-        'Serial Number: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
+        'Copy/Paste CLI Section: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
     submit = SubmitField('Submit')
 
 
 class FIREWALL_NATS_TEXT_FORM(FlaskForm):
     fm_input_txt = StringField(
-        'Serial Number: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
+        'Copy/Paste CLI Section: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
     submit = SubmitField('Submit')
 
 
 class FIREWALL_ROUTES_TEXT_FORM(FlaskForm):
     fm_input_txt = StringField(
-        'Serial Number: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
+        'Copy/Paste CLI Section: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
     submit = SubmitField('Submit')
 
 
