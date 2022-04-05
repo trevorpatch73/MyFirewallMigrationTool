@@ -103,7 +103,8 @@ class FIREWALL_INTERFACES_TABLE(db.Model):
     db_interface_name = db.Column(db.String(20), primary_key=True)
     db_interface_ip = db.Column(db.String(20), primary_key=True)
     db_interface_subnet = db.Column(db.String(20), primary_key=True)
-    db_interface_zone = db.Column(db.String(4), primary_key=True)
+    db_interface_zone = db.Column(db.String(200), primary_key=True)
+    db_interface_vlan = db.Column(db.String(6), primary_key=True)
     db_state = db.Column(db.String(50), nullable=True)
 
     db_serial_number = db.Column(db.String, db.ForeignKey(
@@ -464,6 +465,18 @@ def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
                 print("RAW STRING")
                 print("----------------------")
                 print(input_txt)
+
+                iface_count = 0
+                ifaces = input_txt.split('!')
+                for iface in ifaces:
+
+                    double_dot_dec_pattern = re.compile(
+                        r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+                    result_filter = double_dot_dec_pattern.search(iface)
+
+                    if result_filter:
+                        print(f'Interface[{iface_count}]: {iface}')
+                        iface_count += 1
 
     return render_template(
         "fw_interfaces_input_show_interfaces.html",
