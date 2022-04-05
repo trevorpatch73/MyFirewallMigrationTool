@@ -293,7 +293,7 @@ def FIREWALL_INVENTORY():
 
 
 # Firewall Rules - Text Input
-@app.route("/firewall/rules/text", methods=['GET', 'POST'],)
+@app.route("/firewall/rules/input/show-access-list", methods=['GET', 'POST'],)
 def FIREWALL_RULES_TEXT():
     serial_number = None
     input_txt = None
@@ -315,37 +315,8 @@ def FIREWALL_RULES_TEXT():
             inventory = FIREWALL_INVENTORY_TABLE.query.filter_by(
                 db_serial_number=serial_number).first()
 
-            if inventory is not None:
-                print("----------------------")
-                print("RAW STRING")
-                print("----------------------")
-                print(input_txt)
-
-                print("----------------------")
-                print("PATTERN FILTER")
-                print("----------------------")
-                double_dot_dec_pattern = re.compile(
-                    r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
-
-                row_count = 0
-                rows = input_txt.split('\n')
-                for row in rows:
-                    result_filter = double_dot_dec_pattern.search(row)
-                    if result_filter:
-                        print(f"Row[{row_count}]: {row}")
-                        row_count += 1
-            else:
-                signal = 'error'
-                flash(
-                    f"Serial Number, {serial_number}, is not in the database. Please add the inventory first.")
-
-    if request.method == 'POST':
-        if form.validate_on_submit():
-            serial_number = form.fm_serial_number.data
-            input_txt = form.fm_input_txt.data
-
     return render_template(
-        "fw_rules_text.html",
+        "fw_rules_input_show_access_list.html",
         form=form,
         signal=signal
     )
