@@ -202,6 +202,8 @@ def home():
             return redirect(url_for('FIREWALL_NATS_TEXT'))
         if request.form['submit_button'] == 'Firewall Routes':
             return redirect(url_for('FIREWALL_ROUTES_TEXT'))
+        if request.form['submit_button'] == 'Firewall Interfaces':
+            return redirect(url_for('FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES'))
 
     return render_template(
         "home.html",
@@ -438,7 +440,7 @@ def FIREWALL_ROUTES_TEXT():
 
 # Firewall Interfaces - Text Input
 @app.route("/firewall/interfaces/input/show-interfaces", methods=['GET', 'POST'],)
-def FIREWALL_ROUTES_TEXT():
+def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
     serial_number = None
     input_txt = None
 
