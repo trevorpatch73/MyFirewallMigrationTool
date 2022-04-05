@@ -1,0 +1,6 @@
+ciscoasa# show access-list test 
+access-list test; 3 elements; name hash: 0xcb4257a3
+access-list test line 1 extended permit icmp any any (hitcnt=0) 0xb422e9c2
+access-list test line 2 extended permit object-group TELNET-SSH object-group S1 object-group D1 0x44ae5901
+  access-list test line 2 extended permit tcp 100.100.100.0 255.255.255.0 10.10.10.0 255.255.255.0 eq telnet (hitcnt=1) 0xca10ca21
+  access-list test line 2 extended permit tcp 100.100.100.0 255.255.255.0 10.10.10.0 255.255.255.0 eq ssh(hitcnt=1) 0x5b704158

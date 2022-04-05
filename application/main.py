@@ -58,14 +58,16 @@ class FIREWALL_RULES_TABLE(db.Model):
     __tablename__ = "FIREWALL_RULES_TABLE"
 
     db_source_ip = db.Column(db.String(20), primary_key=True)
+    db_source_zone = db.Column(db.String(300), nullable=True)
     db_destination_ip = db.Column(db.String(20), primary_key=True)
+    db_destination_zone = db.Column(db.String(300), nullable=True)
     db_protocol = db.Column(db.String(5), primary_key=True)
     db_port_number = db.Column(db.String(7), primary_key=True)
     db_rule_name = db.Column(db.String(300), nullable=True)
     db_state = db.Column(db.String(50), nullable=True)
 
     db_serial_number = db.Column(db.String, db.ForeignKey(
-        'FIREWALL_INVENTORY_TABLE.db_serial_number'), nullable=False)
+        'FIREWALL_INVENTORY_TABLE.db_serial_number'),  primary_key=True, nullable=False)
 
 
 class FIREWALL_NATS_TABLE(db.Model):
@@ -78,7 +80,7 @@ class FIREWALL_NATS_TABLE(db.Model):
     db_state = db.Column(db.String(50), nullable=True, unique=True)
 
     db_serial_number = db.Column(db.String, db.ForeignKey(
-        'FIREWALL_INVENTORY_TABLE.db_serial_number'), nullable=False)
+        'FIREWALL_INVENTORY_TABLE.db_serial_number'),  primary_key=True, nullable=False)
 
 
 class FIREWALL_ROUTES_TABLE(db.Model):
@@ -92,7 +94,20 @@ class FIREWALL_ROUTES_TABLE(db.Model):
     db_state = db.Column(db.String(50), nullable=True)
 
     db_serial_number = db.Column(db.String, db.ForeignKey(
-        'FIREWALL_INVENTORY_TABLE.db_serial_number'), nullable=False)
+        'FIREWALL_INVENTORY_TABLE.db_serial_number'),  primary_key=True, nullable=False)
+
+
+class FIREWALL_INTERFACES_TABLE(db.Model):
+    __tablename__ = "FIREWALL_INTERFACES_TABLE"
+
+    db_interface_name = db.Column(db.String(20), primary_key=True)
+    db_interface_ip = db.Column(db.String(20), primary_key=True)
+    db_interface_subnet = db.Column(db.String(20), primary_key=True)
+    db_interface_zone = db.Column(db.String(4), primary_key=True)
+    db_state = db.Column(db.String(50), nullable=True)
+
+    db_serial_number = db.Column(db.String, db.ForeignKey(
+        'FIREWALL_INVENTORY_TABLE.db_serial_number'),  primary_key=True, nullable=False)
 
 
 # Create Database if it doesn't exist
@@ -282,8 +297,47 @@ def FIREWALL_INVENTORY():
 def FIREWALL_RULES_TEXT():
     serial_number = None
     input_txt = None
+
+    source_ip = None
+    destination_ip = None
+    protocol = None
+    port_number = None
+    rule_name = None
+    state = None
+
     signal = None
     form = FIREWALL_RULES_TEXT_FORM()
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            serial_number = form.fm_serial_number.data
+            input_txt = form.fm_input_txt.data
+            inventory = FIREWALL_INVENTORY_TABLE.query.filter_by(
+                db_serial_number=serial_number).first()
+
+            if inventory is not None:
+                print("----------------------")
+                print("RAW STRING")
+                print("----------------------")
+                print(input_txt)
+
+                print("----------------------")
+                print("PATTERN FILTER")
+                print("----------------------")
+                double_dot_dec_pattern = re.compile(
+                    r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+
+                row_count = 0
+                rows = input_txt.split('\n')
+                for row in rows:
+                    result_filter = double_dot_dec_pattern.search(row)
+                    if result_filter:
+                        print(f"Row[{row_count}]: {row}")
+                        row_count += 1
+            else:
+                signal = 'error'
+                flash(
+                    f"Serial Number, {serial_number}, is not in the database. Please add the inventory first.")
 
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -307,7 +361,6 @@ def FIREWALL_NATS_TEXT():
 
     if request.method == 'POST':
         if form.validate_on_submit():
-
             serial_number = form.fm_serial_number.data
             input_txt = form.fm_input_txt.data
 
@@ -339,9 +392,6 @@ def FIREWALL_ROUTES_TEXT():
             input_txt = form.fm_input_txt.data
             inventory = FIREWALL_INVENTORY_TABLE.query.filter_by(
                 db_serial_number=serial_number).first()
-            routes = FIREWALL_ROUTES_TABLE.query.filter_by(
-                db_serial_number=serial_number).all()
-            print(routes)
             if inventory is not None:
                 print("----------------------")
                 print("RAW STRING")
@@ -356,51 +406,43 @@ def FIREWALL_ROUTES_TEXT():
 
                 clean_input = input_txt.replace(',', '')
                 rows = clean_input.split('\n')
-                row_count = 0
                 for row in rows:
                     result_filter = double_dot_dec_pattern.search(row)
                     if result_filter:
-                        print(f"Row[{row_count}]: {row}")
-                        row_count += 1
 
                         elements = row.split(' ')
-                        element_count = 0
-                        for element in elements:
-                            print(f"Element[{element_count}]: {element}")
-                            element_count += 1
 
                         network_prefix = elements[1]
-                        print(
-                            f"Network Prefix, {network_prefix}, is mapped to element[1]")
                         subnet = elements[2]
-                        print(f"Subnet, {subnet}, is mapped to element[2]")
                         next_hop = elements[5]
-                        print(
-                            f"Next Hop, {next_hop}, is mapped to element[5]")
                         admin_distance = elements[3]
-                        print(
-                            f"Admin_distance, {admin_distance}, is mapped to element[3]")
                         name = elements[6]
-                        print(
-                            f"Name, {name}, is mapped to element[6]")
                         state = 'new'
 
-                        if routes is None:
+                        #evaluated_variable = (network_prefix + subnet + next_hop + admin_distance + serial_number)
+                        route = FIREWALL_ROUTES_TABLE.query.filter_by(
+                            db_network_prefix=network_prefix, db_subnet=subnet, db_next_hop=next_hop, db_admin_distance=admin_distance, db_serial_number=serial_number).first()
+                        #control_variable =  (routes.db_network_prefix + routes.db_subnet + routes.db_next_hop + routes.db_admin_distance + routes.db_serial_number)
+
+                        if route is None:
                             entry = FIREWALL_ROUTES_TABLE(
                                 db_network_prefix=network_prefix,
                                 db_subnet=subnet,
                                 db_next_hop=next_hop,
                                 db_admin_distance=admin_distance,
                                 db_name=name,
-                                db_state=state
+                                db_state=state,
+                                db_serial_number=serial_number
                             )
                             db.session.add(entry)
                             db.session.commit()
                             signal = 'info'
                             flash(
-                                f"New rule added to database for firewall, {serial_number}")
+                                f"New route, {network_prefix} {subnet} via {next_hop}, added to database for firewall, {serial_number}")
                         else:
-                            pass
+                            signal = 'error'
+                            flash(
+                                f"Route, {network_prefix} {subnet} via {next_hop}, already exists for firewall, {serial_number} ")
 
                 return redirect(url_for('FIREWALL_ROUTES_TEXT'))
             else:
