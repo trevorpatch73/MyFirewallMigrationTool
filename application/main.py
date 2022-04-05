@@ -158,6 +158,14 @@ class FIREWALL_ROUTES_TEXT_FORM(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class FIREWALL_INTERFACE_INPUT_SHOW_INTERFACE_FORM(FlaskForm):
+    fm_serial_number = StringField(
+        'Serial Number: ', [validators.Length(min=1, max=200)])
+    fm_input_txt = StringField(
+        'Copy/Paste CLI Section: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
+    submit = SubmitField('Submit')
+
+
 ########################
 ### ROUTE DECORATORS ###
 ########################
@@ -423,6 +431,40 @@ def FIREWALL_ROUTES_TEXT():
 
     return render_template(
         "fw_routes_text.html",
+        form=form,
+        signal=signal
+    )
+
+
+# Firewall Interfaces - Text Input
+@app.route("/firewall/interfaces/input/show-interfaces", methods=['GET', 'POST'],)
+def FIREWALL_ROUTES_TEXT():
+    serial_number = None
+    input_txt = None
+
+    interface_name = None
+    interface_ip = None
+    interface_subnet = None
+    interface_zone = None
+    state = None
+
+    signal = None
+    form = FIREWALL_INTERFACE_INPUT_SHOW_INTERFACE_FORM()
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            serial_number = form.fm_serial_number.data
+            input_txt = form.fm_input_txt.data
+            inventory = FIREWALL_INVENTORY_TABLE.query.filter_by(
+                db_serial_number=serial_number).first()
+            if inventory is not None:
+                print("----------------------")
+                print("RAW STRING")
+                print("----------------------")
+                print(input_txt)
+
+    return render_template(
+        "fw_interfaces_input_show_interfaces.html",
         form=form,
         signal=signal
     )
