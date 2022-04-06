@@ -425,14 +425,14 @@ def FIREWALL_ROUTES_INPUT_SHOW_ROUTE():
                             flash(
                                 f"Route, {network_prefix} {subnet} via {next_hop}, already exists for firewall, {serial_number} ")
 
-                return redirect(url_for('FIREWALL_ROUTES_TEXT'))
+                return redirect(url_for('FIREWALL_ROUTES_INPUT_SHOW_ROUTE'))
             else:
                 signal = 'error'
                 flash(
                     f"Serial Number, {serial_number}, is not in the database. Please add the inventory first.")
 
     return render_template(
-        "fw_routes_text.html",
+        "fw_routes_input_show_route.html",
         form=form,
         signal=signal
     )
