@@ -623,7 +623,7 @@ def FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES():
                                 flash(
                                     f"IP address, {interface_ip}, for firewall, {serial_number}, interface {interface_name} has been updated")
                                 fw_int.db_state = 'updated'
-                                db.session.com
+                                db.session.commit()
                             if interface_subnet != '':
                                 fw_int.db_interface_subnet = interface_subnet
                                 db.session.commit()
