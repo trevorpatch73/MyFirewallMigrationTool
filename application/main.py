@@ -613,7 +613,6 @@ def FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES():
                             signal = 'info'
                             flash(
                                 f'New interface, {interface_name}, for firewall, {serial_number}, has been successfully added to database!')
-                            return redirect(url_for('FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES'))
 
                         else:
                             if interface_ip != '':
@@ -656,7 +655,7 @@ def FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES():
                                     f"VLAN, {interface_vlan}, for firewall, {serial_number}, interface {interface_name} has been updated")
                                 fw_int.db_state = 'updated'
                                 db.session.commit()
-                            return redirect(url_for('FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES'))
+        return redirect(url_for('FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES'))
 
     return render_template(
         "fw_interfaces_input_run_config_interfaces.html",
