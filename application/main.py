@@ -631,7 +631,7 @@ def FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES():
                                 flash(
                                     f"Subnet, {interface_subnet}, for firewall, {serial_number}, interface {interface_name} has been updated")
                                 fw_int.db_state = 'updated'
-                                db.session.com
+                                db.session.commit()
                             if interface_description != '':
                                 fw_int.db_interface_description = interface_description
                                 db.session.commit()
@@ -639,7 +639,7 @@ def FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES():
                                 flash(
                                     f"Description, {interface_description}, for firewall, {serial_number}, interface {interface_name} has been updated")
                                 fw_int.db_state = 'updated'
-                                db.session.com
+                                db.session.commit()
                             if interface_zone != '':
                                 fw_int.db_interface_zone = interface_zone
                                 db.session.commit()
