@@ -1,0 +1,132 @@
+!
+interface GigabitEthernet0/0
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface GigabitEthernet0/1
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface GigabitEthernet0/2
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface GigabitEthernet0/3
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Management0/0
+ shutdown
+ nameif man
+ security-level 100
+ ip address 192.168.10.1 255.255.255.0 
+!
+interface GigabitEthernet1/0
+ description Connection to Partner
+ media-type sfp
+ nameif outside
+ security-level 0
+ ip address 10.13.16.65 255.255.255.248 
+!
+interface GigabitEthernet1/1
+ description To Development
+ media-type sfp
+ no nameif
+ security-level 100
+ no ip address
+!
+interface GigabitEthernet1/1.18
+ description General Internet connection for Wired Users
+ vlan 18
+ nameif users
+ security-level 100
+ ip address 10.18.0.23 255.255.254.0 
+!
+interface GigabitEthernet1/1.28
+ description Wireless Users Network
+ vlan 28
+ nameif wirelessusers
+ security-level 100
+ ip address 10.18.2.23 255.255.254.0 
+!
+interface GigabitEthernet1/1.29
+ description printer network
+ vlan 29
+ nameif printers
+ security-level 100
+ ip address 10.18.4.23 255.255.255.192 
+!
+interface GigabitEthernet1/1.58
+ description Tracking Network
+ shutdown
+ vlan 58
+ nameif tracking
+ security-level 100
+ ip address 10.18.6.113 255.255.255.248 
+!
+interface GigabitEthernet1/1.68
+ vlan 68
+ nameif Video
+ security-level 100
+ ip address 10.18.6.23 255.255.255.224 
+!
+interface GigabitEthernet1/1.78
+ description Management Network
+ vlan 78
+ nameif inside
+ security-level 100
+ ip address 10.18.7.23 255.255.255.0 
+!
+interface GigabitEthernet1/1.210
+ description Mobile Training
+ vlan 210
+ nameif Mobile_Training
+ security-level 100
+ ip address 10.18.5.23 255.255.255.0 
+!
+interface GigabitEthernet1/1.716
+ description Camera
+ vlan 716
+ nameif video
+ security-level 100
+ ip address 10.18.6.73 255.255.255.248 
+!
+interface GigabitEthernet1/1.717
+ description bu1 traffic
+ vlan 717
+ nameif bu1
+ security-level 100
+ ip address 10.46.129.65 255.255.255.240 
+!
+interface GigabitEthernet1/1.800
+ vlan 800
+ nameif backup
+ security-level 75
+ ip address 10.18.6.129 255.255.255.248 
+!
+interface GigabitEthernet1/1.808
+ vlan 808
+ nameif HVAC
+ security-level 50
+ ip address 10.18.6.81 255.255.255.248 
+!
+interface GigabitEthernet1/2
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface GigabitEthernet1/3
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
