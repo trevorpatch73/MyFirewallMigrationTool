@@ -152,7 +152,7 @@ class FIREWALL_NATS_TEXT_FORM(FlaskForm):
     submit = SubmitField('Submit')
 
 
-class FIREWALL_ROUTES_TEXT_FORM(FlaskForm):
+class FIREWALL_ROUTES_INPUT_SHOW_ROUTE_FORM(FlaskForm):
     fm_serial_number = StringField(
         'Serial Number: ', [validators.Length(min=1, max=200)])
     fm_input_txt = StringField(
@@ -203,7 +203,7 @@ def home():
         if request.form['submit_button'] == 'Firewall NATs':
             return redirect(url_for('FIREWALL_NATS_TEXT'))
         if request.form['submit_button'] == 'Firewall Routes':
-            return redirect(url_for('FIREWALL_ROUTES_TEXT'))
+            return redirect(url_for('FIREWALL_ROUTES_INPUT_SHOW_ROUTE'))
         if request.form['submit_button'] == 'Firewall Interfaces':
             return redirect(url_for('FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES'))
 
@@ -355,8 +355,8 @@ def FIREWALL_NATS_TEXT():
 
 
 # Firewall routes - Text Input
-@app.route("/firewall/routes/text", methods=['GET', 'POST'],)
-def FIREWALL_ROUTES_TEXT():
+@app.route("/firewall/routes/input/show_routes", methods=['GET', 'POST'],)
+def FIREWALL_ROUTES_INPUT_SHOW_ROUTE():
     serial_number = None
     input_txt = None
     network_prefix = None
@@ -367,7 +367,7 @@ def FIREWALL_ROUTES_TEXT():
     state = None
 
     signal = None
-    form = FIREWALL_ROUTES_TEXT_FORM()
+    form = FIREWALL_ROUTES_INPUT_SHOW_ROUTE()
 
     if request.method == 'POST':
         if form.validate_on_submit():
