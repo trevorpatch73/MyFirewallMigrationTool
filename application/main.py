@@ -101,10 +101,11 @@ class FIREWALL_INTERFACES_TABLE(db.Model):
     __tablename__ = "FIREWALL_INTERFACES_TABLE"
 
     db_interface_name = db.Column(db.String(20), primary_key=True)
-    db_interface_ip = db.Column(db.String(20), primary_key=True)
-    db_interface_subnet = db.Column(db.String(20), primary_key=True)
-    db_interface_zone = db.Column(db.String(200), primary_key=True)
-    db_interface_vlan = db.Column(db.String(6), primary_key=True)
+    db_interface_ip = db.Column(db.String(20), nullable=True)
+    db_interface_subnet = db.Column(db.String(20), nullable=True)
+    db_interface_zone = db.Column(db.String(200), nullable=True)
+    db_interface_vlan = db.Column(db.String(6), nullable=True)
+    db_interface_description = db.Column(db.String(500), nullable=True)
     db_state = db.Column(db.String(50), nullable=True)
 
     db_serial_number = db.Column(db.String, db.ForeignKey(
@@ -449,6 +450,8 @@ def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
     interface_ip = None
     interface_subnet = None
     interface_zone = None
+    interface_description = None
+    interface_vlan = None
     state = None
 
     signal = None
@@ -477,6 +480,193 @@ def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
                     if result_filter:
                         print(f'Interface[{iface_count}]: {iface}')
                         iface_count += 1
+
+                        row_count = 0
+                        rows = iface.split('\n')
+
+                        for row in rows:
+
+                            if "interface" in row:
+                                print(
+                                    f'Word, Interface, in Row[{row_count}]: {row}')
+                                row_count += 1
+
+                                cols = row.split(' ')
+                                col_count = 0
+
+                                for col in cols:
+                                    print(f'Column[{col_count}]: {col}')
+                                    col_count += 1
+
+                                    if "interface" not in col:
+                                        print(
+                                            f'Word, interface, not in Column[{col_count}]: {col}')
+                                        interface_name = col
+                                        print(
+                                            f"interface name is mapped to: {interface_name}")
+
+ #################################################################################################################
+
+                            if "ip address" in row:
+                                print(
+                                    f'Word, ip address, in Row[{row_count}]: {row}')
+                                row_count += 1
+
+                                cols = row.split(' ')
+                                col_count = 0
+
+                                for col in cols:
+                                    print(f'Column[{col_count}]: {col}')
+
+                                    dot_dec_pattern = re.compile(
+                                        r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+                                    result_filter = dot_dec_pattern.search(col)
+
+                                    if result_filter:
+                                        if col.startswith('255'):
+                                            print(
+                                                f'The subnet is, {col}, at position Column[{col_count}]')
+                                            interface_subnet = col
+                                        else:
+                                            print(
+                                                f'The IPv4 Address is, {col}, at position Column[{col_count}]')
+                                            interface_ip = col
+
+                                    col_count += 1
+
+ #################################################################################################################
+
+                            if "description" in row:
+                                print(
+                                    f'Word, description, in Row[{row_count}]: {row}')
+                                row_count += 1
+
+                                cols = row.split(' ')
+                                col_count = 0
+
+                                for col in cols:
+                                    print(f'Column[{col_count}]: {col}')
+                                    col_count += 1
+
+                                    if 'description' not in col:
+                                        print(
+                                            f'The interface description is, {col}')
+                                        interface_description = col
+
+ #################################################################################################################
+
+                            if "nameif" in row:
+                                print(
+                                    f'Word, nameif, in Row[{row_count}]: {row}')
+                                row_count += 1
+
+                                cols = row.split(' ')
+                                col_count = 0
+
+                                for col in cols:
+                                    print(f'Column[{col_count}]: {col}')
+                                    col_count += 1
+
+                                    if 'nameif' not in col:
+                                        print(
+                                            f'The interface zone has been mapped too, {col}')
+                                        interface_zone = col
+
+ #################################################################################################################
+
+                            if "vlan" in row:
+                                print(
+                                    f'Word, vlan, in Row[{row_count}]: {row}')
+                                row_count += 1
+
+                                cols = row.split(' ')
+                                col_count = 0
+
+                                for col in cols:
+                                    print(f'Column[{col_count}]: {col}')
+                                    col_count += 1
+
+                                    if 'vlan' not in col:
+                                        print(
+                                            f'The interface vlan has been mapped too, {col}')
+                                        interface_vlan = col
+
+ #################################################################################################################
+
+                        fw_int = FIREWALL_INTERFACES_TABLE.query.filter_by(
+                            db_serial_number=serial_number, db_interface_name=interface_name).first()
+
+                        if interface_description is None:
+                            interface_description = 'empty'
+
+                        if interface_zone is None:
+                            interface_zone = 'empty'
+
+                        if interface_vlan is None:
+                            interface_vlan = 'empty'
+
+                        if state is None:
+                            state = 'new'
+
+                        if fw_int is None:
+                            entry = FIREWALL_INTERFACES_TABLE(
+                                db_interface_name=interface_name,
+                                db_interface_ip=interface_ip,
+                                db_interface_subnet=interface_subnet,
+                                db_interface_zone=interface_zone,
+                                db_interface_vlan=interface_vlan,
+                                db_interface_description=interface_description,
+                                db_serial_number=serial_number,
+                                db_state=state
+                            )
+                            db.session.add(entry)
+                            db.session.commit()
+                            sleep(1)
+                            signal = 'info'
+                            flash(
+                                f'New interface, {interface_name}, for firewall, {serial_number}, has been successfully added to database!')
+
+                        else:
+                            if interface_ip != '':
+                                fw_int.db_interface_ip = interface_ip
+                                db.session.commit()
+                                signal = 'info'
+                                flash(
+                                    f"IP address, {interface_ip}, for firewall, {serial_number}, interface {interface_name} has been updated")
+                                fw_int.db_state = 'updated'
+                                db.session.com
+                            if interface_subnet != '':
+                                fw_int.db_interface_subnet = interface_subnet
+                                db.session.commit()
+                                signal = 'info'
+                                flash(
+                                    f"Subnet, {interface_subnet}, for firewall, {serial_number}, interface {interface_name} has been updated")
+                                fw_int.db_state = 'updated'
+                                db.session.com
+                            if interface_description != '':
+                                fw_int.db_interface_description = interface_description
+                                db.session.commit()
+                                signal = 'info'
+                                flash(
+                                    f"Description, {interface_description}, for firewall, {serial_number}, interface {interface_name} has been updated")
+                                fw_int.db_state = 'updated'
+                                db.session.com
+                            if interface_zone != '':
+                                fw_int.db_interface_zone = interface_zone
+                                db.session.commit()
+                                signal = 'info'
+                                flash(
+                                    f"Security Zone, {interface_zone}, for firewall, {serial_number}, interface {interface_name} has been updated")
+                                fw_int.db_state = 'updated'
+                                db.session.com
+                            if interface_vlan != '':
+                                fw_int.db_interface_vlan = interface_vlan
+                                db.session.commit()
+                                signal = 'info'
+                                flash(
+                                    f"VLAN, {interface_vlan}, for firewall, {serial_number}, interface {interface_name} has been updated")
+                                fw_int.db_state = 'updated'
+                                db.session.com
 
     return render_template(
         "fw_interfaces_input_show_interfaces.html",
