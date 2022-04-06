@@ -160,7 +160,7 @@ class FIREWALL_ROUTES_TEXT_FORM(FlaskForm):
     submit = SubmitField('Submit')
 
 
-class FIREWALL_INTERFACE_INPUT_SHOW_INTERFACE_FORM(FlaskForm):
+class FIREWALL_INTERFACE_INPUT_RUN_CONFIG_INTERFACES_FORM(FlaskForm):
     fm_serial_number = StringField(
         'Serial Number: ', [validators.Length(min=1, max=200)])
     fm_input_txt = StringField(
@@ -205,7 +205,7 @@ def home():
         if request.form['submit_button'] == 'Firewall Routes':
             return redirect(url_for('FIREWALL_ROUTES_TEXT'))
         if request.form['submit_button'] == 'Firewall Interfaces':
-            return redirect(url_for('FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES'))
+            return redirect(url_for('FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES'))
 
     return render_template(
         "home.html",
@@ -402,10 +402,8 @@ def FIREWALL_ROUTES_TEXT():
                         name = elements[6]
                         state = 'new'
 
-                        #evaluated_variable = (network_prefix + subnet + next_hop + admin_distance + serial_number)
                         route = FIREWALL_ROUTES_TABLE.query.filter_by(
                             db_network_prefix=network_prefix, db_subnet=subnet, db_next_hop=next_hop, db_admin_distance=admin_distance, db_serial_number=serial_number).first()
-                        #control_variable =  (routes.db_network_prefix + routes.db_subnet + routes.db_next_hop + routes.db_admin_distance + routes.db_serial_number)
 
                         if route is None:
                             entry = FIREWALL_ROUTES_TABLE(
@@ -441,8 +439,8 @@ def FIREWALL_ROUTES_TEXT():
 
 
 # Firewall Interfaces - Text Input
-@app.route("/firewall/interfaces/input/show-interfaces", methods=['GET', 'POST'],)
-def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
+@app.route("/firewall/interfaces/input/run_config_interfaces", methods=['GET', 'POST'],)
+def FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES():
     serial_number = None
     input_txt = None
 
@@ -455,7 +453,7 @@ def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
     state = None
 
     signal = None
-    form = FIREWALL_INTERFACE_INPUT_SHOW_INTERFACE_FORM()
+    form = FIREWALL_INTERFACE_INPUT_RUN_CONFIG_INTERFACES_FORM()
 
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -505,8 +503,6 @@ def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
                                         print(
                                             f"interface name is mapped to: {interface_name}")
 
- #################################################################################################################
-
                             if "ip address" in row:
                                 print(
                                     f'Word, ip address, in Row[{row_count}]: {row}')
@@ -534,8 +530,6 @@ def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
 
                                     col_count += 1
 
- #################################################################################################################
-
                             if "description" in row:
                                 print(
                                     f'Word, description, in Row[{row_count}]: {row}')
@@ -552,8 +546,6 @@ def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
                                         print(
                                             f'The interface description is, {col}')
                                         interface_description = col
-
- #################################################################################################################
 
                             if "nameif" in row:
                                 print(
@@ -572,8 +564,6 @@ def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
                                             f'The interface zone has been mapped too, {col}')
                                         interface_zone = col
 
- #################################################################################################################
-
                             if "vlan" in row:
                                 print(
                                     f'Word, vlan, in Row[{row_count}]: {row}')
@@ -590,8 +580,6 @@ def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
                                         print(
                                             f'The interface vlan has been mapped too, {col}')
                                         interface_vlan = col
-
- #################################################################################################################
 
                         fw_int = FIREWALL_INTERFACES_TABLE.query.filter_by(
                             db_serial_number=serial_number, db_interface_name=interface_name).first()
@@ -669,7 +657,7 @@ def FIREWALL_INTERFACES_INPUT_SHOW_INTERFACES():
                                 db.session.com
 
     return render_template(
-        "fw_interfaces_input_show_interfaces.html",
+        "fw_interfaces_input_run_config_interfaces.html",
         form=form,
         signal=signal
     )
