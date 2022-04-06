@@ -367,7 +367,7 @@ def FIREWALL_ROUTES_INPUT_SHOW_ROUTE():
     state = None
 
     signal = None
-    form = FIREWALL_ROUTES_INPUT_SHOW_ROUTE()
+    form = FIREWALL_ROUTES_INPUT_SHOW_ROUTE_FORM()
 
     if request.method == 'POST':
         if form.validate_on_submit():
