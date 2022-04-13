@@ -648,21 +648,23 @@ def FIREWALL_RULES_TEXT():
                                         ).first()
 
                                         if srvobj is None:
-                                            entry = FIREWALL_ASA_OBJECT_SERVICE_TABLE(
-                                                db_object_name=object_name,
-                                                db_object_description=object_description,
-                                                db_object_type=object_type,
-                                                db_object_range=object_range,
-                                                db_object_protocol=object_protocol,
-                                                db_object_port=object_port,
-                                                db_serial_number=serial_number
-                                            )
-                                            db.session.add(entry)
-                                            db.session.commit()
-                                            sleep(1)
-                                            signal = 'info'
-                                            flash(
-                                                f'New Service Object, {object_name}:{object_range}:{object_protocol}:{object_port}, for firewall, {serial_number}')
+                                            if object_name != object_protocol or object_name != object_port:
+                                                entry = FIREWALL_ASA_OBJECT_SERVICE_TABLE(
+                                                    db_object_name=object_name,
+                                                    db_object_description=object_description,
+                                                    db_object_type=object_type,
+                                                    db_object_range=object_range,
+                                                    db_object_protocol=object_protocol,
+                                                    db_object_port=object_port,
+                                                    db_serial_number=serial_number
+                                                )
+
+                                                db.session.add(entry)
+                                                db.session.commit()
+                                                sleep(1)
+                                                signal = 'info'
+                                                flash(
+                                                    f'New Service Object, {object_name}:{object_range}:{object_protocol}:{object_port}, for firewall, {serial_number}')
 
                         object_count += 1
 
