@@ -137,7 +137,7 @@ class FIREWALL_ASA_OBJECT_SERVICE_TABLE(db.Model):
     db_object_type = db.Column(db.String(200), nullable=True)
     db_object_range = db.Column(db.String(200), nullable=True)
     db_object_protocol = db.Column(db.String(50), primary_key=True)
-    db_object_port = db.Column(db.String(50), nullable=True)
+    db_object_port = db.Column(db.String(50), primary_key=True)
 
     db_serial_number = db.Column(db.String, db.ForeignKey(
         'FIREWALL_INVENTORY_TABLE.db_serial_number'),  primary_key=True, nullable=False)
