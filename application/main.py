@@ -389,9 +389,9 @@ def FIREWALL_RULES_TEXT():
     if request.method == 'POST':
         if form.validate_on_submit():
             serial_number = form.fm_serial_number.data
-            access_group_input_txt = form.fm_access_group_input_tx.data
-            object_input_txt = form.object_input_txt.data
-            acl_input_txt = form.acl_input_txt.data
+            access_group_input_txt = form.fm_access_group_input_txt.data
+            object_input_txt = form.fm_object_input_txt.data
+            acl_input_txt = form.fm_acl_input_txt.data
             inventory = FIREWALL_INVENTORY_TABLE.query.filter_by(
                 db_serial_number=serial_number).first()
             if inventory is not None:
@@ -544,21 +544,28 @@ def FIREWALL_RULES_TEXT():
                                             col_count += 1
 
                                     if object_name is not None and object_ip is not None and object_subnet is not None:
-                                        entry = FIREWALL_ASA_OBJECT_NETWORK_TABLE(
+                                        netobj = FIREWALL_ASA_OBJECT_NETWORK_TABLE.query.filter_by(
+                                            db_serial_number=serial_number,
                                             db_object_name=object_name,
-                                            db_object_description=object_description,
-                                            db_object_type=object_type,
-                                            db_object_range=object_range,
                                             db_object_ip=object_ip,
-                                            db_object_subnet=object_subnet,
-                                            db_serial_number=serial_number
-                                        )
-                                        db.session.add(entry)
-                                        db.session.commit()
-                                        sleep(1)
-                                        signal = 'info'
-                                        flash(
-                                            f'New Network Object, {object_name}:{object_range}:{object_ip}:{object_subnet}, for firewall, {serial_number}')
+                                            db_object_subnet=object_subnet
+                                        ).first()
+                                        if netobj is None:
+                                            entry = FIREWALL_ASA_OBJECT_NETWORK_TABLE(
+                                                db_object_name=object_name,
+                                                db_object_description=object_description,
+                                                db_object_type=object_type,
+                                                db_object_range=object_range,
+                                                db_object_ip=object_ip,
+                                                db_object_subnet=object_subnet,
+                                                db_serial_number=serial_number
+                                            )
+                                            db.session.add(entry)
+                                            db.session.commit()
+                                            sleep(1)
+                                            signal = 'info'
+                                            flash(
+                                                f'New Network Object, {object_name}:{object_range}:{object_ip}:{object_subnet}, for firewall, {serial_number}')
 
                         object_count += 1
 
