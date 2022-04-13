@@ -1,0 +1,50 @@
+object network obj_any
+ subnet 0.0.0.0 0.0.0.0
+object network obj-0.0.0.0
+ host 0.0.0.0
+object network obj-10.18.6.80
+ subnet 10.18.6.80 255.255.255.248
+object network obj-10.18.6.0
+ subnet 10.18.6.0 255.255.255.224
+object network obj-172.31.254.240
+ subnet 172.31.254.240 255.255.255.248
+object service obj-tcp-eq-8081
+ service tcp destination eq 8081 
+object service obj-tcp-eq-8083
+ service tcp destination eq 8083 
+object service obj-tcp-eq-8085
+ service tcp destination eq 8085 
+object service obj-tcp-eq-10224
+ service tcp destination eq 10224 
+object service obj-tcp-eq-36515
+ service tcp destination eq 36515 
+object service obj-tcp-eq-25
+ service tcp destination eq smtp 
+object service obj-tcp-eq-2140
+ service tcp destination eq 2140
+object-group network Management_Network
+ description Local Management Network
+ network-object 10.18.7.0 255.255.255.0
+object-group network Local-user-Subnets
+ description Local Subnets with Workstations or Servers
+ network-object 10.18.0.0 255.255.254.0
+ network-object 10.18.2.0 255.255.254.0
+ network-object 10.18.6.0 255.255.255.224
+ network-object 10.18.6.64 255.255.255.224
+ network-object 10.18.6.128 255.255.255.192
+ network-object 10.18.6.120 255.255.255.248
+ network-object 10.18.6.80 255.255.255.240
+ network-object 10.18.8.0 255.255.255.0
+object-group service Video-Ports-Inbound tcp
+ description TCP ports for Inbound Video Traffic
+ port-object eq 10224
+ port-object eq 36515
+ port-object eq 3389
+object-group service Video-Ports-Outbound tcp
+ port-object eq 8081
+ port-object eq 8083
+ port-object eq 8085
+ port-object eq 10224
+ port-object eq 36515
+ port-object eq smtp
+ port-object eq 2140

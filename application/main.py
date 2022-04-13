@@ -668,6 +668,54 @@ def FIREWALL_RULES_TEXT():
 
                         object_count += 1
 
+                if access_group_input_txt is not None:
+                    rows = str(access_group_input_txt).split('\n')
+                    row_count = 0
+
+                    cols = row.split(' ')
+                    col_count = 0
+                    print(cols)
+
+                    for col in cols:
+                        print(f'Column[{col_count}]: {col}')
+                        col_count += 1
+
+                    nonwhite_pattern = re.compile(r'(\w+)')
+
+                    result_filter = nonwhite_pattern.search(col)
+
+                    if result_filter:
+                        acl_name = str(cols[1])
+                        print(f'ACL Name is mapped too: {acl_name}')
+
+                        rule_direction = str(cols[2])
+                        print(
+                            f'Rule Direction is mapped too: {rule_direction}')
+
+                        nameif_zone = str(cols[4])
+                        print(f'Zone is mapped too: {nameif_zone}')
+
+                        group = FIREWALL_ASA_ACCESS_GROUP_TABLE.query.filter_by(
+                            db_acl_name=acl_name,
+                            db_nameif_zone=rule_direction,
+                            db_rule_direction=result_filter,
+                            db_serial_number=serial_number
+                        ).first()
+
+                        if group is None:
+                            entry = FIREWALL_ASA_ACCESS_GROUP_TABLE(
+                                db_acl_name=acl_name,
+                                db_nameif_zone=rule_direction,
+                                db_rule_direction=result_filter,
+                                db_serial_number=serial_number
+                            )
+                            db.session.add(entry)
+                            db.session.commit()
+                            sleep(1)
+                            signal = 'info'
+                            flash(
+                                f'New Access-Group, {acl_name}:{rule_direction}:{nameif_zone}, for firewall, {serial_number}')
+
             else:
                 signal = 'error'
                 flash(
