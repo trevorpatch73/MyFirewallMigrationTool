@@ -395,10 +395,172 @@ def FIREWALL_RULES_TEXT():
             inventory = FIREWALL_INVENTORY_TABLE.query.filter_by(
                 db_serial_number=serial_number).first()
             if inventory is not None:
-                print("----------------------")
-                print("RAW STRING: Objects")
-                print("----------------------")
-                print(object_input_txt)
+                if object_input_txt is not None:
+                    print("----------------------")
+                    print("RAW STRING: Objects")
+                    print("----------------------")
+                    print(object_input_txt)
+                    sleep(5)
+
+                    built_string = ""
+                    row_count = 0
+                    rows = str(object_input_txt).split('\n')
+                    for row in rows:
+                        if row.startswith('object') or row.startswith('object'):
+                            marked_string = row.replace("object", "!\nobject")
+                            built_string = built_string + "\n" + marked_string
+                        else:
+                            built_string = built_string + "\n" + row
+                        row_count += 1
+
+                    print("----------------------")
+                    print("BUILT STRING: Objects")
+                    print("----------------------")
+                    print(object_input_txt)
+                    sleep(5)
+
+                    objects = built_string.split("!")
+                    object_count = 0
+                    for object in objects:
+                        object_name = None
+                        object_type = None
+                        object_description = None
+                        print(f'Object[{object_count}]: {object}')
+
+                        row_count = 0
+                        rows = object.split('\n')
+
+                        for row in rows:
+                            print(f'Row[{row_count}]: {row}')
+                            object_range = None
+                            object_ip = None
+                            object_subnet = None
+                            object_protocol = None
+                            object_port = None
+
+                            if row.startswith('object') or row.startswith('object-group'):
+                                cols = row.split(' ')
+                                col_count = 0
+
+                                for col in cols:
+                                    print(f'Column[{col_count}]: {col}')
+
+                                    if "object" not in col and "network" not in col and "service" not in col:
+                                        if object_name is None:
+                                            object_name = col
+                                        else:
+                                            object_name = object_name + "_" + col
+                                        print(
+                                            f'OBJECT NAME has been mapped to {object_name}')
+
+                                    if col == 'network' or col == 'service':
+                                        object_type = col
+                                        print(
+                                            f'OBJECT TYPE has been mapped to {object_type}')
+
+                                    col_count += 1
+
+                            if "description" in row:
+                                cols = row.split(' ')
+                                col_count = 0
+
+                                for col in cols:
+                                    print(f'Column[{col_count}]: {col}')
+
+                                    if "description" not in col:
+                                        if object_description is None:
+                                            object_description = col
+                                        else:
+                                            object_description = object_description + "_" + col
+                                            print(
+                                                f'OBJECT DESCRIPTION has been mapped to {object_name}')
+
+                                    col_count += 1
+
+                            if "network" in object:
+                                if not row.startswith('object') or not row.startswith('object-group'):
+                                    if "subnet" in row:
+                                        cols = row.split(' ')
+                                        col_count = 0
+
+                                        dot_dec_pattern = re.compile(
+                                            r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+
+                                        for col in cols:
+                                            print(
+                                                f'Column[{col_count}]: {col}')
+
+                                            if "subnet" in col:
+                                                object_range = col
+                                                print(
+                                                    f'Range is mapped to: {object_range}')
+
+                                            result_filter = dot_dec_pattern.search(
+                                                col)
+                                            if result_filter:
+                                                if col.startswith('255'):
+                                                    object_subnet = col
+                                                    print(
+                                                        f'Subnet is mapped to: {object_subnet}')
+                                                if not col.startswith('255') and '0.0.0.0' not in row:
+                                                    object_ip = col
+                                                    print(
+                                                        f'IP is mapped to: {object_ip}')
+                                                if "0.0.0.0 0.0.0.0" in row:
+                                                    object_ip = "0.0.0.0"
+                                                    print(
+                                                        f'IP is mapped to: {object_ip}')
+                                                    object_subnet = "0.0.0.0"
+                                                    print(
+                                                        f'Subnet is mapped to: {object_subnet}')
+
+                                            col_count += 1
+
+                                    if "host" in row:
+                                        cols = row.split(' ')
+                                        col_count = 0
+                                        dot_dec_pattern = re.compile(
+                                            r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+
+                                        for col in cols:
+                                            print(
+                                                f'Column[{col_count}]: {col}')
+
+                                            if "host" in col:
+                                                object_range = col
+                                                print(
+                                                    f'Range is mapped to: {object_range}')
+
+                                            result_filter = dot_dec_pattern.search(
+                                                col)
+                                            if result_filter:
+                                                object_ip = col
+                                                print(
+                                                    f'Host IP is mapped to: {object_ip}')
+                                                object_subnet = "255.255.255.255"
+                                                print(
+                                                    f'Host Subnet is mapped to: {object_subnet}')
+
+                                            col_count += 1
+
+                                    if object_name is not None and object_ip is not None and object_subnet is not None:
+                                        entry = FIREWALL_ASA_OBJECT_NETWORK_TABLE(
+                                            db_object_name=object_name,
+                                            db_object_description=object_description,
+                                            db_object_type=object_type,
+                                            db_object_range=object_range,
+                                            db_object_ip=object_ip,
+                                            db_object_subnet=object_subnet,
+                                            db_serial_number=serial_number
+                                        )
+                                        db.session.add(entry)
+                                        db.session.commit()
+                                        sleep(1)
+                                        signal = 'info'
+                                        flash(
+                                            f'New Network Object, {object_name}:{object_range}:{object_ip}:{object_subnet}, for firewall, {serial_number}')
+
+                        object_count += 1
 
             else:
                 signal = 'error'
