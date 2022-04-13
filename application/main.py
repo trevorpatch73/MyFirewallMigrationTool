@@ -473,7 +473,7 @@ def FIREWALL_RULES_TEXT():
                                         else:
                                             object_description = object_description + "_" + col
                                             print(
-                                                f'OBJECT DESCRIPTION has been mapped to {object_name}')
+                                                f'OBJECT DESCRIPTION has been mapped to {object_description}')
 
                                     col_count += 1
 
