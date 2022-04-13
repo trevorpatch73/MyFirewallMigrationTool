@@ -590,7 +590,7 @@ def FIREWALL_RULES_TEXT():
                                                 print(
                                                     f'Protocol is mapped to: {object_protocol}')
 
-                                            if "service" not in col or str(object_protocol) not in col or "source" not in col or "destination" not in col or "eq" in col:
+                                            if "service" not in col or str(object_protocol) not in col or "source" not in col or "destination" not in col or "eq" in col or str(object_name) not in col:
                                                 nonwhite_pattern = re.compile(
                                                     r'(\w+)')
                                                 result_filter = nonwhite_pattern.search(
@@ -624,7 +624,7 @@ def FIREWALL_RULES_TEXT():
                                             if "icmp" in object_name:
                                                 object_protocol = "icmp"
 
-                                            if "port-object" not in col or "source" not in col or "destination" not in col or "eq" in col:
+                                            if "port-object" not in col or "source" not in col or "destination" not in col or "eq" in col or str(object_name) not in col:
                                                 nonwhite_pattern = re.compile(
                                                     r'(\w+)')
                                                 result_filter = nonwhite_pattern.search(
@@ -648,7 +648,7 @@ def FIREWALL_RULES_TEXT():
                                         ).first()
 
                                         if srvobj is None:
-                                            entry - FIREWALL_ASA_OBJECT_SERVICE_TABLE(
+                                            entry = FIREWALL_ASA_OBJECT_SERVICE_TABLE(
                                                 db_object_name=object_name,
                                                 db_object_description=object_description,
                                                 db_object_type=object_type,
