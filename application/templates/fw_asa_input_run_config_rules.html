@@ -9,8 +9,14 @@
         {{ form.fm_serial_number.label(class="form-label") }}
         {{ form.fm_serial_number(class="form-control") }}    
         <br/>
-        {{ form.fm_input_txt.label(class="form-label") }}
-        {{ form.fm_input_txt(class="form-control") }}            
+        {{ form.fm_access_group_input_txt.label(class="form-label") }}
+        {{ form.fm_access_group_input_txt(class="form-control") }}
+        <br/>
+        {{ form.fm_object_input_txt.label(class="form-label") }}
+        {{ form.fm_object_input_txt(class="form-control") }} 
+        <br/>
+        {{ form.fm_acl_input_txt.label(class="form-label") }}
+        {{ form.fm_acl_input_txt(class="form-control") }}               
         <br/><br/>
     </div>
     {{ form.submit(class="btn btn-dark") }}  

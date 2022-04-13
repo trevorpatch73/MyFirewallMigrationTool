@@ -49,25 +49,17 @@ class FIREWALL_INVENTORY_TABLE(db.Model):
     db_model = db.Column(db.String(300), nullable=True)
     db_state = db.Column(db.String(50), nullable=True)
 
-    FIREWALL_RULES_TABLE = db.relationship('FIREWALL_RULES_TABLE')
     FIREWALL_NATS_TABLE = db.relationship('FIREWALL_NATS_TABLE')
     FIREWALL_ROUTES_TABLE = db.relationship('FIREWALL_ROUTES_TABLE')
-
-
-class FIREWALL_RULES_TABLE(db.Model):
-    __tablename__ = "FIREWALL_RULES_TABLE"
-
-    db_source_ip = db.Column(db.String(20), primary_key=True)
-    db_source_zone = db.Column(db.String(300), nullable=True)
-    db_destination_ip = db.Column(db.String(20), primary_key=True)
-    db_destination_zone = db.Column(db.String(300), nullable=True)
-    db_protocol = db.Column(db.String(5), primary_key=True)
-    db_port_number = db.Column(db.String(7), primary_key=True)
-    db_rule_name = db.Column(db.String(300), nullable=True)
-    db_state = db.Column(db.String(50), nullable=True)
-
-    db_serial_number = db.Column(db.String, db.ForeignKey(
-        'FIREWALL_INVENTORY_TABLE.db_serial_number'),  primary_key=True, nullable=False)
+    FIREWALL_INTERFACES_TABLE = db.relationship('FIREWALL_INTERFACES_TABLE')
+    FIREWALL_ASA_ACCESS_GROUP_TABLE = db.relationship(
+        'FIREWALL_ASA_ACCESS_GROUP_TABLE')
+    FIREWALL_ASA_OBJECT_NETWORK_TABLE = db.relationship(
+        'FIREWALL_ASA_OBJECT_NETWORK_TABLE')
+    FIREWALL_ASA_OBJECT_SERVICE_TABLE = db.relationship(
+        'FIREWALL_ASA_OBJECT_SERVICE_TABLE')
+    FIREWALL_ASA_RULES_ACL_TABLE = db.relationship(
+        'FIREWALL_ASA_RULES_ACL_TABLE')
 
 
 class FIREWALL_NATS_TABLE(db.Model):
@@ -106,6 +98,63 @@ class FIREWALL_INTERFACES_TABLE(db.Model):
     db_interface_zone = db.Column(db.String(200), nullable=True)
     db_interface_vlan = db.Column(db.String(6), nullable=True)
     db_interface_description = db.Column(db.String(500), nullable=True)
+    db_state = db.Column(db.String(50), nullable=True)
+
+    db_serial_number = db.Column(db.String, db.ForeignKey(
+        'FIREWALL_INVENTORY_TABLE.db_serial_number'),  primary_key=True, nullable=False)
+
+
+class FIREWALL_ASA_ACCESS_GROUP_TABLE(db.Model):
+    __tablename__ = "FIREWALL_ASA_ACCESS_GROUPS_TABLE"
+
+    db_acl_name = db.Column(db.String(200), primary_key=True)
+    db_nameif_zone = db.Column(db.String(200), nullable=True)
+    db_rule_direction = db.Column(db.String(200), nullable=True)
+
+    db_serial_number = db.Column(db.String, db.ForeignKey(
+        'FIREWALL_INVENTORY_TABLE.db_serial_number'),  primary_key=True, nullable=False)
+
+
+class FIREWALL_ASA_OBJECT_NETWORK_TABLE(db.Model):
+    __tablename__ = "FIREWALL_ASA_OBJECT_NETWORK_TABLE"
+
+    db_object_name = db.Column(db.String(500), primary_key=True)
+    db_object_description = db.Column(db.String(1000), nullable=True)
+    db_object_type = db.Column(db.String(200), nullable=True)
+    db_object_range = db.Column(db.String(200), nullable=True)
+    db_object_ip = db.Column(db.String(20), primary_key=True)
+    db_object_subnet = db.Column(db.String(20), primary_key=True)
+
+    db_serial_number = db.Column(db.String, db.ForeignKey(
+        'FIREWALL_INVENTORY_TABLE.db_serial_number'),  primary_key=True, nullable=False)
+
+
+class FIREWALL_ASA_OBJECT_SERVICE_TABLE(db.Model):
+    __tablename__ = "FIREWALL_ASA_OBJECT_SERVICE_TABLE"
+
+    db_object_name = db.Column(db.String(500), primary_key=True)
+    db_object_description = db.Column(db.String(1000), nullable=True)
+    db_object_type = db.Column(db.String(200), nullable=True)
+    db_object_range = db.Column(db.String(200), nullable=True)
+    db_object_protocol = db.Column(db.String(50), primary_key=True)
+    db_object_port = db.Column(db.String(50), nullable=True)
+
+    db_serial_number = db.Column(db.String, db.ForeignKey(
+        'FIREWALL_INVENTORY_TABLE.db_serial_number'),  primary_key=True, nullable=False)
+
+
+class FIREWALL_ASA_RULES_ACL_TABLE(db.Model):
+    __tablename__ = "FIREWALL_ASA_RULES_ACL_TABLE"
+
+    db_acl_name = db.Column(db.String(500), primary_key=True)
+    db_acl_description = db.Column(db.String(1000), nullable=True)
+    db_source_ip = db.Column(db.String(20), primary_key=True)
+    db_source_zone = db.Column(db.String(200), nullable=True)
+    db_destination_ip = db.Column(db.String(20), primary_key=True)
+    db_destination_zone = db.Column(db.String(200), nullable=True)
+    db_flow_protocol = db.Column(db.String(50), primary_key=True)
+    db_flow_port = db.Column(db.String(50), primary_key=True)
+    db_firewall_action = db.Column(db.String(50), nullable=True)
     db_state = db.Column(db.String(50), nullable=True)
 
     db_serial_number = db.Column(db.String, db.ForeignKey(
@@ -167,6 +216,17 @@ class FIREWALL_INTERFACE_INPUT_RUN_CONFIG_INTERFACES_FORM(FlaskForm):
         'Copy/Paste CLI Section: ', [validators.Length(min=1, max=1000000)], widget=TextArea())
     submit = SubmitField('Submit')
 
+
+class FIREWALL_ASA_INPUT_RUN_CONFIG_RULES_FORM(FlaskForm):
+    fm_serial_number = StringField(
+        'Serial Number: ', [validators.Length(min=1, max=200)])
+    fm_access_group_input_txt = StringField(
+        'Copy/Paste CLI "ACCESS-GROUP" Section: ', widget=TextArea())
+    fm_object_input_txt = StringField(
+        'Copy/Paste CLI "OBJECT" & "OBJECT-GROUP" Section: ', widget=TextArea())
+    fm_acl_input_txt = StringField(
+        'Copy/Paste CLI "ACCESS-CONTROL-LIST" Section: ', widget=TextArea())
+    submit = SubmitField('Submit')
 
 ########################
 ### ROUTE DECORATORS ###
@@ -305,37 +365,55 @@ def FIREWALL_INVENTORY():
 
 
 # Firewall Rules - Text Input
-@app.route("/firewall/rules/input/show-access-list", methods=['GET', 'POST'],)
+@app.route("/firewall/asa/rules/input/run-config-rules", methods=['GET', 'POST'],)
 def FIREWALL_RULES_TEXT():
     serial_number = None
-    input_txt = None
+    access_group_input_tx = None
+    object_input_txt = None
+    acl_input_txt = None
 
+    acl_name = None
+    acl_description = None
     source_ip = None
+    source_zone = None
     destination_ip = None
-    protocol = None
-    port_number = None
-    rule_name = None
+    destination_zone = None
+    flow_protocol = None
+    flow_port = None
+    firewall_action = None
     state = None
 
     signal = None
-    form = FIREWALL_RULES_TEXT_FORM()
+    form = FIREWALL_ASA_INPUT_RUN_CONFIG_RULES_FORM()
 
     if request.method == 'POST':
         if form.validate_on_submit():
             serial_number = form.fm_serial_number.data
-            input_txt = form.fm_input_txt.data
+            access_group_input_txt = form.fm_access_group_input_tx.data
+            object_input_txt = form.object_input_txt.data
+            acl_input_txt = form.acl_input_txt.data
             inventory = FIREWALL_INVENTORY_TABLE.query.filter_by(
                 db_serial_number=serial_number).first()
+            if inventory is not None:
+                print("----------------------")
+                print("RAW STRING: Objects")
+                print("----------------------")
+                print(object_input_txt)
+
+            else:
+                signal = 'error'
+                flash(
+                    f"Serial Number, {serial_number}, is not in the database. Please add the inventory first.")
 
     return render_template(
-        "fw_rules_input_show_access_list.html",
+        "fw_asa_input_run_config_rules.html",
         form=form,
         signal=signal
     )
 
 
 # Firewall NATs - Text Input
-@app.route("/firewall/nats/text", methods=['GET', 'POST'],)
+@app.route("/firewall/asa/nats/text", methods=['GET', 'POST'],)
 def FIREWALL_NATS_TEXT():
     serial_number = None
     input_txt = None
@@ -355,7 +433,7 @@ def FIREWALL_NATS_TEXT():
 
 
 # Firewall routes - Text Input
-@app.route("/firewall/routes/input/show_routes", methods=['GET', 'POST'],)
+@app.route("/firewall/asa/routes/input/show_routes", methods=['GET', 'POST'],)
 def FIREWALL_ROUTES_INPUT_SHOW_ROUTE():
     serial_number = None
     input_txt = None
@@ -439,7 +517,7 @@ def FIREWALL_ROUTES_INPUT_SHOW_ROUTE():
 
 
 # Firewall Interfaces - Text Input
-@app.route("/firewall/interfaces/input/run_config_interfaces", methods=['GET', 'POST'],)
+@app.route("/firewall/asa/interfaces/input/run_config_interfaces", methods=['GET', 'POST'],)
 def FIREWALL_INTERFACES_INPUT_RUN_CONFIG_INTERFACES():
     serial_number = None
     input_txt = None
