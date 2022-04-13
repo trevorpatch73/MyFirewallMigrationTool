@@ -105,11 +105,11 @@ class FIREWALL_INTERFACES_TABLE(db.Model):
 
 
 class FIREWALL_ASA_ACCESS_GROUP_TABLE(db.Model):
-    __tablename__ = "FIREWALL_ASA_ACCESS_GROUPS_TABLE"
+    __tablename__ = "FIREWALL_ASA_ACCESS_GROUP_TABLE"
 
-    db_acl_name = db.Column(db.String(200), primary_key=True)
-    db_nameif_zone = db.Column(db.String(200), nullable=True)
-    db_rule_direction = db.Column(db.String(200), nullable=True)
+    db_acl_name = db.Column(db.String(500), primary_key=True)
+    db_nameif_zone = db.Column(db.String(500), nullable=True)
+    db_rule_direction = db.Column(db.String(500), nullable=True)
 
     db_serial_number = db.Column(db.String, db.ForeignKey(
         'FIREWALL_INVENTORY_TABLE.db_serial_number'),  primary_key=True, nullable=False)
@@ -669,53 +669,55 @@ def FIREWALL_RULES_TEXT():
                         object_count += 1
 
                 if access_group_input_txt is not None:
+                    print(access_group_input_txt)
                     rows = str(access_group_input_txt).split('\n')
                     row_count = 0
 
-                    cols = row.split(' ')
-                    col_count = 0
-                    print(cols)
+                    for row in rows:
 
-                    for col in cols:
-                        print(f'Column[{col_count}]: {col}')
-                        col_count += 1
+                        cols = row.split(' ')
+                        col_count = 0
+                        print(cols)
 
-                    nonwhite_pattern = re.compile(r'(\w+)')
+                        for col in cols:
+                            print(f'Column[{col_count}]: {col}')
+                            col_count += 1
 
-                    result_filter = nonwhite_pattern.search(col)
+                        nonwhite_pattern = re.compile(r'(\w+)')
 
-                    if result_filter:
-                        acl_name = str(cols[1])
-                        print(f'ACL Name is mapped too: {acl_name}')
+                        result_filter = nonwhite_pattern.search(col)
 
-                        rule_direction = str(cols[2])
-                        print(
-                            f'Rule Direction is mapped too: {rule_direction}')
+                        if result_filter:
+                            acl_name = str(cols[1])
+                            print(f'ACL Name is mapped too: {acl_name}')
 
-                        nameif_zone = str(cols[4])
-                        print(f'Zone is mapped too: {nameif_zone}')
+                            rule_direction = str(cols[2])
+                            print(
+                                f'Rule Direction is mapped too: {rule_direction}')
 
-                        group = FIREWALL_ASA_ACCESS_GROUP_TABLE.query.filter_by(
-                            db_acl_name=acl_name,
-                            db_nameif_zone=rule_direction,
-                            db_rule_direction=result_filter,
-                            db_serial_number=serial_number
-                        ).first()
+                            nameif_zone = str(cols[4])
+                            print(f'Zone is mapped too: {nameif_zone}')
 
-                        if group is None:
-                            entry = FIREWALL_ASA_ACCESS_GROUP_TABLE(
+                            group = FIREWALL_ASA_ACCESS_GROUP_TABLE.query.filter_by(
                                 db_acl_name=acl_name,
-                                db_nameif_zone=rule_direction,
-                                db_rule_direction=result_filter,
                                 db_serial_number=serial_number
-                            )
-                            db.session.add(entry)
-                            db.session.commit()
-                            sleep(1)
-                            signal = 'info'
-                            flash(
-                                f'New Access-Group, {acl_name}:{rule_direction}:{nameif_zone}, for firewall, {serial_number}')
+                            ).first()
 
+                            if group is None:
+                                entry = FIREWALL_ASA_ACCESS_GROUP_TABLE(
+                                    db_acl_name=acl_name,
+                                    db_nameif_zone=rule_direction,
+                                    db_rule_direction=result_filter,
+                                    db_serial_number=serial_number
+                                )
+                                db.session.add(entry)
+                                db.session.commit()
+                                sleep(1)
+                                signal = 'info'
+                                flash(
+                                    f'New Access-Group, {acl_name}:{rule_direction}:{nameif_zone}, for firewall, {serial_number}')
+
+                        row_count += 1
             else:
                 signal = 'error'
                 flash(
