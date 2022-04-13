@@ -545,10 +545,13 @@ def FIREWALL_RULES_TEXT():
 
                                     if object_name is not None and object_ip is not None and object_subnet is not None:
                                         netobj = FIREWALL_ASA_OBJECT_NETWORK_TABLE.query.filter_by(
-                                            db_serial_number=serial_number,
                                             db_object_name=object_name,
+                                            db_object_description=object_description,
+                                            db_object_type=object_type,
+                                            db_object_range=object_range,
                                             db_object_ip=object_ip,
-                                            db_object_subnet=object_subnet
+                                            db_object_subnet=object_subnet,
+                                            db_serial_number=serial_number
                                         ).first()
                                         if netobj is None:
                                             entry = FIREWALL_ASA_OBJECT_NETWORK_TABLE(
@@ -566,6 +569,100 @@ def FIREWALL_RULES_TEXT():
                                             signal = 'info'
                                             flash(
                                                 f'New Network Object, {object_name}:{object_range}:{object_ip}:{object_subnet}, for firewall, {serial_number}')
+
+                            if "service" in object:
+                                if not row.startswith('object') or not row.startswith('object-group'):
+                                    if "service" in row:
+                                        cols = row.split(' ')
+                                        col_count = 0
+
+                                        for col in cols:
+                                            print(
+                                                f'Column[{col_count}]: {col}')
+
+                                            if "service" in col:
+                                                object_range = col
+                                                print(
+                                                    f'Range is mapped to: {object_range}')
+
+                                            if "tcp" in col or "udp" in col or "icmp" in col or "ip" in col:
+                                                object_protocol = col
+                                                print(
+                                                    f'Protocol is mapped to: {object_protocol}')
+
+                                            if "service" not in col or str(object_protocol) not in col or "source" not in col or "destination" not in col or "eq" in col:
+                                                nonwhite_pattern = re.compile(
+                                                    r'(\w+)')
+                                                result_filter = nonwhite_pattern.search(
+                                                    col)
+                                                if result_filter:
+                                                    object_port = col
+                                                    print(
+                                                        f'Port is mapped to: {object_port}')
+
+                                            col_count += 1
+
+                                    if "port-object" in row:
+                                        cols = row.split(' ')
+                                        col_count = 0
+
+                                        for col in cols:
+                                            print(
+                                                f'Column[{col_count}]: {col}')
+
+                                            if "port-object" in col:
+                                                object_range = col
+                                                print(
+                                                    f'Range is mapped to: {object_range}')
+
+                                            if "tcp" in object_name:
+                                                object_protocol = "tcp"
+
+                                            if "udp" in object_name:
+                                                object_protocol = "udp"
+
+                                            if "icmp" in object_name:
+                                                object_protocol = "icmp"
+
+                                            if "port-object" not in col or "source" not in col or "destination" not in col or "eq" in col:
+                                                nonwhite_pattern = re.compile(
+                                                    r'(\w+)')
+                                                result_filter = nonwhite_pattern.search(
+                                                    col)
+                                                if result_filter:
+                                                    object_port = col
+                                                    print(
+                                                        f'Port is mapped to: {object_port}')
+
+                                            col_count += 1
+
+                                    if object_name is not None and object_protocol is not None and object_port is not None:
+                                        srvobj = FIREWALL_ASA_OBJECT_SERVICE_TABLE.query.filter_by(
+                                            db_object_name=object_name,
+                                            db_object_description=object_description,
+                                            db_object_type=object_type,
+                                            db_object_range=object_range,
+                                            db_object_protocol=object_protocol,
+                                            db_object_port=object_port,
+                                            db_serial_number=serial_number
+                                        ).first()
+
+                                        if srvobj is None:
+                                            entry - FIREWALL_ASA_OBJECT_SERVICE_TABLE(
+                                                db_object_name=object_name,
+                                                db_object_description=object_description,
+                                                db_object_type=object_type,
+                                                db_object_range=object_range,
+                                                db_object_protocol=object_protocol,
+                                                db_object_port=object_port,
+                                                db_serial_number=serial_number
+                                            )
+                                            db.session.add(entry)
+                                            db.session.commit()
+                                            sleep(1)
+                                            signal = 'info'
+                                            flash(
+                                                f'New Service Object, {object_name}:{object_range}:{object_protocol}:{object_port}, for firewall, {serial_number}')
 
                         object_count += 1
 
