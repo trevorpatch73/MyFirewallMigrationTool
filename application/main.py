@@ -149,8 +149,10 @@ class FIREWALL_ASA_RULES_ACL_TABLE(db.Model):
     db_acl_name = db.Column(db.String(500), primary_key=True)
     db_acl_description = db.Column(db.String(1000), nullable=True)
     db_source_ip = db.Column(db.String(20), primary_key=True)
+    db_source_subnet = db.Column(db.String(20), nullable=True)
     db_source_zone = db.Column(db.String(200), nullable=True)
     db_destination_ip = db.Column(db.String(20), primary_key=True)
+    db_destination_subnet = db.Column(db.String(20), nullable=True)
     db_destination_zone = db.Column(db.String(200), nullable=True)
     db_flow_protocol = db.Column(db.String(50), primary_key=True)
     db_flow_port = db.Column(db.String(50), primary_key=True)
@@ -720,15 +722,17 @@ def FIREWALL_RULES_TEXT():
                         row_count += 1
 
                 if acl_input_txt is not None:
-                    net_objs = FIREWALL_ASA_OBJECT_NETWORK_TABLE.query.filter_by(
-                        db_serial_number=serial_number).with_entities(FIREWALL_ASA_OBJECT_NETWORK_TABLE.db_object_name).all()
-                    serv_objs = FIREWALL_ASA_OBJECT_SERVICE_TABLE.query.filter_by(
-                        db_serial_number=serial_number).with_entities(FIREWALL_ASA_OBJECT_SERVICE_TABLE.db_object_name).all()
+                    #net_objs = FIREWALL_ASA_OBJECT_NETWORK_TABLE.query.filter_by(db_serial_number=serial_number).with_entities(FIREWALL_ASA_OBJECT_NETWORK_TABLE.db_object_name).all()
+                    #serv_objs = FIREWALL_ASA_OBJECT_SERVICE_TABLE.query.filter_by(db_serial_number=serial_number).with_entities(FIREWALL_ASA_OBJECT_SERVICE_TABLE.db_object_name).all()
                     acc_grps = FIREWALL_ASA_ACCESS_GROUP_TABLE.query.filter_by(
                         db_serial_number=serial_number).with_entities(FIREWALL_ASA_ACCESS_GROUP_TABLE.db_acl_name).all()
 
+                    print(acc_grps)
+
                     entry_count = 0
                     for acc_grp in acc_grps:
+                        acc_grp = str(acc_grp).replace("('", "")
+                        acc_grp = str(acc_grp).replace("',)", "")
                         print(f'Entry[{entry_count}]: {acc_grp}')
                         entry_count += 1
 
@@ -738,7 +742,305 @@ def FIREWALL_RULES_TEXT():
                         for acl in acls:
                             if str(acc_grp) in acl:
                                 print(
-                                    f'Access-Group, {acc_grp} detected in ACL {acl}')
+                                    f'Access-Group, {acc_grp} detected in ACL')
+                                print(f'ACL: {acl}')
+
+                                if "remark" not in acl:
+
+                                    cols = acl.split(' ')
+                                    col_count = 0
+
+                                    for col in cols:
+                                        print(f'Column[{col_count}]: {col}')
+
+                                        acl_name = (
+                                            str(cols[1]) + "-Line-" + str(row_count+1))
+                                        firewall_action = str(cols[3])
+                                        flow_protocol = str(cols[4])
+
+                                        dot_dec_pattern = re.compile(
+                                            r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+
+                                        if col_count == 5:
+                                            dot_dec_filter = dot_dec_pattern.search(
+                                                col)
+
+                                            if dot_dec_filter:
+                                                source_ip = str(cols[5])
+                                                source_subnet = str(cols[6])
+                                            if "any" in col:
+                                                source_ip = str(cols[5])
+                                                source_subnet = "any"
+                                            if "object" in col:
+                                                source_ip = str(cols[6])
+                                                source_subnet = "object"
+                                            if "host" in col:
+                                                destination_ip = str(
+                                                    cols[col_count+1])
+                                                destination_subnet = "255.255.255.255"
+
+                                        if col_count > 5:
+                                            dot_dec_filter = dot_dec_pattern.search(
+                                                col)
+
+                                            if dot_dec_filter:
+                                                destination_ip = str(
+                                                    cols[col_count])
+                                                dot_dec_filter_2 = dot_dec_pattern.search(
+                                                    cols[col_count+1])
+                                                if dot_dec_filter_2:
+                                                    destination_subnet = str(
+                                                        cols[col_count+1])
+
+                                            if "any" in col:
+                                                destination_ip = str(
+                                                    cols[col_count])
+                                                destination_subnet = "any"
+
+                                            if "object" in col:
+                                                destination_ip = str(
+                                                    cols[col_count+1])
+                                                destination_subnet = "object"
+
+                                            if "host" in col:
+                                                destination_ip = str(
+                                                    cols[col_count+1])
+                                                destination_subnet = "255.255.255.255"
+
+                                        if "eq" in col:
+                                            flow_port = str(cols[col_count+1])
+
+                                        if "range" in col:
+                                            flow_port = (str(cols[col_count+1]) +
+                                                         "-" + str(cols[col_count+2]))
+
+                                        if "lt" not in acl:
+                                            if "gt" not in acl:
+                                                if "eq" not in acl:
+                                                    if "neq" not in acl:
+                                                        if "range" not in acl:
+                                                            if "object-group service" not in acl:
+                                                                flow_port = 'any'
+
+                                        if ("object-group" or "object-group service") in acl and flow_port != 'any':
+
+                                            non_white_pattern = re.compile(
+                                                r'(\w+)')
+
+                                            po5_non_white = non_white_pattern.search(
+                                                cols[5])
+                                            po6_non_white = non_white_pattern.search(
+                                                cols[6])
+                                            po7_non_white = non_white_pattern.search(
+                                                cols[7])
+                                            po8_non_white = non_white_pattern.search(
+                                                cols[8])
+
+                                            if "any" in cols[5] and "any" in cols[6]:
+                                                if "object-group" in acl and "object-group service" not in acl:
+                                                    flow_port = str(cols[8])
+
+                                                if "object-group service" in acl:
+                                                    flow_port = str(cols[9])
+
+                                            if (str(po5_non_white) and str(po6_non_white) and str(po7_non_white) and str(po8_non_white)) in acl and "any" not in acl and len(cols) > 8:
+                                                if "object-group" in acl and "object-group service" not in acl:
+                                                    flow_port = str(cols[10])
+
+                                                if "object-group service" in acl:
+                                                    flow_port = str(cols[11])
+
+                                            if "any" in (cols[5] or cols[7]):
+                                                if "object-group" in acl and "object-group service" not in acl:
+                                                    flow_port = str(cols[9])
+
+                                                if "object-group service" in acl:
+                                                    flow_port = str(cols[10])
+
+                                        col_count += 1
+                                if "remark" in acl and ("permit" or "deny") in acl:
+                                    objects = acl.split(":")
+                                    object_count = 0
+
+                                    for object in objects:
+                                        print(
+                                            f'Object[{object_count}]: {object}')
+
+                                        if ("permit" or "deny") in object:
+
+                                            cols = object.split(' ')
+                                            col_count = 0
+
+                                            for col in cols:
+                                                print(
+                                                    f'Column[{col_count}]: {col}')
+
+                                                firewall_action = str(cols[1])
+                                                flow_protocol = str(cols[2])
+
+                                                if col_count == 3:
+                                                    dot_dec_filter = dot_dec_pattern.search(
+                                                        col)
+
+                                                    if dot_dec_filter:
+                                                        source_ip = str(
+                                                            cols[3])
+                                                        source_subnet = str(
+                                                            cols[4])
+                                                    if "any" in col:
+                                                        source_ip = str(
+                                                            cols[3])
+                                                        source_subnet = "any"
+                                                    if "object" in col:
+                                                        source_ip = str(
+                                                            cols[4])
+                                                        source_subnet = "object"
+                                                    if "host" in col:
+                                                        destination_ip = str(
+                                                            cols[col_count+1])
+                                                        destination_subnet = "255.255.255.255"
+
+                                                if col_count > 3:
+                                                    dot_dec_filter = dot_dec_pattern.search(
+                                                        col)
+
+                                                    if dot_dec_filter:
+                                                        destination_ip = str(
+                                                            cols[col_count])
+                                                        if len(cols) > 6:
+                                                            dot_dec_filter_2 = dot_dec_pattern.search(
+                                                                cols[col_count+1])
+                                                            if dot_dec_filter_2:
+                                                                destination_subnet = str(
+                                                                    cols[col_count+1])
+                                                    if "any" in col:
+                                                        destination_ip = str(
+                                                            cols[col_count])
+                                                        destination_subnet = "any"
+                                                    if "object" in col:
+                                                        destination_ip = str(
+                                                            cols[col_count+1])
+                                                        destination_subnet = "object"
+                                                    if "host" in col:
+                                                        destination_ip = str(
+                                                            cols[col_count+1])
+                                                        destination_subnet = "255.255.255.255"
+
+                                                if ("lt" or "gt" or "eq" or "neq") in col:
+                                                    flow_port = str(
+                                                        cols[col_count+1])
+
+                                                if "range" in col:
+                                                    flow_port = (str(cols[col_count+1]) +
+                                                                 "-" + str(cols[col_count+2]))
+
+                                                if "lt" not in acl:
+                                                    if "gt" not in acl:
+                                                        if "eq" not in acl:
+                                                            if "neq" not in acl:
+                                                                if "range" not in acl:
+                                                                    if "object-group service" not in acl:
+                                                                        flow_port = 'any'
+
+                                                if ("object-group" or "object-group service") in acl and len(cols) > 6:
+
+                                                    non_white_pattern = re.compile(
+                                                        r'(\w+)')
+
+                                                    po3_non_white = non_white_pattern.search(
+                                                        cols[3])
+                                                    po4_non_white = non_white_pattern.search(
+                                                        cols[4])
+                                                    po5_non_white = non_white_pattern.search(
+                                                        cols[5])
+                                                    po6_non_white = non_white_pattern.search(
+                                                        cols[6])
+
+                                                    if "any" in cols[3] and "any" in cols[4]:
+                                                        if "object-group" in acl and "object-group service" not in acl:
+                                                            flow_port = str(
+                                                                cols[2])
+
+                                                        if "object-group service" in acl:
+                                                            flow_port = str(
+                                                                cols[2])
+
+                                                    if (str(po3_non_white) and str(po4_non_white) and str(po5_non_white) and str(po6_non_white)) in acl and "any" not in acl and len(cols) > 6:
+                                                        if "object-group" in acl and "object-group service" not in acl:
+                                                            flow_port = str(
+                                                                cols[8])
+
+                                                        if "object-group service" in acl:
+                                                            flow_port = str(
+                                                                cols[9])
+
+                                                    if "any" in (cols[3] or cols[5]):
+                                                        if "object-group" in acl and "object-group service" not in acl:
+                                                            flow_port = str(
+                                                                cols[7])
+
+                                                        if "object-group service" in acl:
+                                                            flow_port = str(
+                                                                cols[8])
+
+                                                col_count += 1
+
+                                        object_count += 1
+
+                                print(
+                                    f'ACL NAME IS MAPPED TOO:           {acl_name}')
+                                print(
+                                    f'SOURCE_IP IS MAPPED TOO:          {source_ip}')
+                                print(
+                                    f'SOURCE_SUBNET IS MAPPED TOO:      {source_subnet}')
+                                print(
+                                    f'DESTINATION_IP IS MAPPED TOO:     {destination_ip}')
+                                print(
+                                    f'DESTINATION_SUBNET IS MAPPED TOO: {destination_subnet}')
+                                print(
+                                    f'PROTOCOL IS MAPPED TOO:           {flow_protocol}')
+                                print(
+                                    f'PORT IS MAPPED TOO:               {flow_port}')
+                                print(
+                                    f'ACTION IS MAPPED TOO:             {firewall_action}')
+
+                                db_access_groups = FIREWALL_ASA_ACCESS_GROUP_TABLE.query.filter_by(
+                                    db_serial_number=serial_number, db_acl_name=acl_name).first()
+
+                                direction = db_access_groups.db_rule_direction
+
+                                if direction == 'in':
+                                    source_zone = db_access_groups.db_nameif_zone
+                                    destination_zone = 'any'
+                                elif direction == 'out':
+                                    source_zone = 'any'
+                                    destination_zone = db_access_groups.db_nameif_zone
+                                else:
+                                    source_zone = 'any'
+                                    destination_zone = 'any'
+
+                                result = FIREWALL_ASA_RULES_ACL_TABLE.query.filter_by(
+                                    db_serial_number=serial_number, db_acl_name=acl_name, db_source_ip=source_ip, db_destination_ip=destination_ip, db_flow_protocol=flow_protocol, db_flow_port=flow_port).first()
+
+                                if result is not None:
+                                    entry = FIREWALL_ASA_RULES_ACL_TABLE(
+                                        db_acl_name=acl_name,
+                                        db_acl_description='ASA RULE MIGRATED VIA PRESIDIO AUTOMATION',
+                                        db_source_ip=source_ip,
+                                        db_source_subnet=source_subnet,
+                                        db_source_zone=source_zone,
+                                        db_destination_ip=destination_ip,
+                                        db_destination_subnet=destination_subnet,
+                                        db_destination_zone=destination_zone,
+                                        db_flow_protocol=flow_protocol,
+                                        db_flow_port=flow_port,
+                                        db_firewall_action=firewall_action,
+                                        db_state='new',
+                                        db_serial_number=serial_number
+                                    )
+
+                                acl_count += 1
+                                sleep(1)
 
             else:
                 signal = 'error'
