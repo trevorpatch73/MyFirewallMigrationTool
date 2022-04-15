@@ -706,8 +706,8 @@ def FIREWALL_RULES_TEXT():
                             if group is None:
                                 entry = FIREWALL_ASA_ACCESS_GROUP_TABLE(
                                     db_acl_name=acl_name,
-                                    db_nameif_zone=rule_direction,
-                                    db_rule_direction=result_filter,
+                                    db_nameif_zone=nameif_zone,
+                                    db_rule_direction=rule_direction,
                                     db_serial_number=serial_number
                                 )
                                 db.session.add(entry)

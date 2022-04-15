@@ -1,0 +1,2 @@
+access-group to-inside-networks in interface outside
+access-group from-inside-networks out interface outside
