@@ -718,6 +718,28 @@ def FIREWALL_RULES_TEXT():
                                     f'New Access-Group, {acl_name}:{rule_direction}:{nameif_zone}, for firewall, {serial_number}')
 
                         row_count += 1
+
+                if acl_input_txt is not None:
+                    net_objs = FIREWALL_ASA_OBJECT_NETWORK_TABLE.query.filter_by(
+                        db_serial_number=serial_number).with_entities(FIREWALL_ASA_OBJECT_NETWORK_TABLE.db_object_name).all()
+                    serv_objs = FIREWALL_ASA_OBJECT_SERVICE_TABLE.query.filter_by(
+                        db_serial_number=serial_number).with_entities(FIREWALL_ASA_OBJECT_SERVICE_TABLE.db_object_name).all()
+                    acc_grps = FIREWALL_ASA_ACCESS_GROUP_TABLE.query.filter_by(
+                        db_serial_number=serial_number).with_entities(FIREWALL_ASA_ACCESS_GROUP_TABLE.db_acl_name).all()
+
+                    entry_count = 0
+                    for acc_grp in acc_grps:
+                        print(f'Entry[{entry_count}]: {acc_grp}')
+                        entry_count += 1
+
+                        acls = str(acl_input_txt).split('\n')
+                        acl_count = 0
+
+                        for acl in acls:
+                            if str(acc_grp) in acl:
+                                print(
+                                    f'Access-Group, {acc_grp} detected in ACL {acl}')
+
             else:
                 signal = 'error'
                 flash(
