@@ -5,6 +5,7 @@
 # pip install flask-sqlalchemy
 # pip install flask-wtf
 
+from distutils.log import error
 from os import path
 from pathlib import Path
 from time import sleep
@@ -1005,24 +1006,39 @@ def FIREWALL_RULES_TEXT():
                                     f'ACTION IS MAPPED TOO:             {firewall_action}')
 
                                 db_access_groups = FIREWALL_ASA_ACCESS_GROUP_TABLE.query.filter_by(
-                                    db_serial_number=serial_number, db_acl_name=acl_name).first()
+                                    db_serial_number=serial_number, db_acl_name=acc_grp).first()
 
-                                direction = db_access_groups.db_rule_direction
+                                print(db_access_groups)
 
-                                if direction == 'in':
-                                    source_zone = db_access_groups.db_nameif_zone
-                                    destination_zone = 'any'
-                                elif direction == 'out':
-                                    source_zone = 'any'
-                                    destination_zone = db_access_groups.db_nameif_zone
+                                if db_access_groups is None:
+                                    print("-------------------")
+                                    print("-------------------")
+                                    print("-------------------")
+                                    print("ERROR")
+                                    print("-------------------")
+                                    print("-------------------")
+                                    print("-------------------")
+                                    sleep(2)
+
                                 else:
-                                    source_zone = 'any'
-                                    destination_zone = 'any'
+                                    direction = db_access_groups.db_rule_direction
+
+                                    if direction == 'in':
+                                        source_zone = db_access_groups.db_nameif_zone
+                                        destination_zone = 'any'
+                                    elif direction == 'out':
+                                        source_zone = 'any'
+                                        destination_zone = db_access_groups.db_nameif_zone
+                                    else:
+                                        source_zone = 'any'
+                                        destination_zone = 'any'
 
                                 result = FIREWALL_ASA_RULES_ACL_TABLE.query.filter_by(
                                     db_serial_number=serial_number, db_acl_name=acl_name, db_source_ip=source_ip, db_destination_ip=destination_ip, db_flow_protocol=flow_protocol, db_flow_port=flow_port).first()
 
-                                if result is not None:
+                                print(result)
+
+                                if result is None:
                                     entry = FIREWALL_ASA_RULES_ACL_TABLE(
                                         db_acl_name=acl_name,
                                         db_acl_description='ASA RULE MIGRATED VIA PRESIDIO AUTOMATION',
@@ -1038,6 +1054,11 @@ def FIREWALL_RULES_TEXT():
                                         db_state='new',
                                         db_serial_number=serial_number
                                     )
+                                    db.session.add(entry)
+                                    db.session.commit()
+                                    signal = 'info'
+                                    flash(
+                                        f'New Firewall Rule, {acl_name}, added for firewall, {serial_number}')
 
                                 acl_count += 1
                                 sleep(1)
