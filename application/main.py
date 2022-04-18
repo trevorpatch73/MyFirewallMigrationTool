@@ -723,8 +723,6 @@ def FIREWALL_RULES_TEXT():
                         row_count += 1
 
                 if acl_input_txt is not None:
-                    #net_objs = FIREWALL_ASA_OBJECT_NETWORK_TABLE.query.filter_by(db_serial_number=serial_number).with_entities(FIREWALL_ASA_OBJECT_NETWORK_TABLE.db_object_name).all()
-                    #serv_objs = FIREWALL_ASA_OBJECT_SERVICE_TABLE.query.filter_by(db_serial_number=serial_number).with_entities(FIREWALL_ASA_OBJECT_SERVICE_TABLE.db_object_name).all()
                     acc_grps = FIREWALL_ASA_ACCESS_GROUP_TABLE.query.filter_by(
                         db_serial_number=serial_number).with_entities(FIREWALL_ASA_ACCESS_GROUP_TABLE.db_acl_name).all()
 
@@ -755,7 +753,7 @@ def FIREWALL_RULES_TEXT():
                                         print(f'Column[{col_count}]: {col}')
 
                                         acl_name = (
-                                            str(cols[1]) + "-Line-" + str(row_count+1))
+                                            str(cols[1]) + "-Line-" + str(acl_count+1))
                                         firewall_action = str(cols[3])
                                         flow_protocol = str(cols[4])
 
@@ -776,9 +774,9 @@ def FIREWALL_RULES_TEXT():
                                                 source_ip = str(cols[6])
                                                 source_subnet = "object"
                                             if "host" in col:
-                                                destination_ip = str(
-                                                    cols[col_count+1])
-                                                destination_subnet = "255.255.255.255"
+                                                source_ip = str(
+                                                    cols[6])
+                                                source_subnet = "255.255.255.255"
 
                                         if col_count > 5:
                                             dot_dec_filter = dot_dec_pattern.search(
@@ -815,14 +813,6 @@ def FIREWALL_RULES_TEXT():
                                             flow_port = (str(cols[col_count+1]) +
                                                          "-" + str(cols[col_count+2]))
 
-                                        if "lt" not in acl:
-                                            if "gt" not in acl:
-                                                if "eq" not in acl:
-                                                    if "neq" not in acl:
-                                                        if "range" not in acl:
-                                                            if "object-group service" not in acl:
-                                                                flow_port = 'any'
-
                                         if ("object-group" or "object-group service") in acl and flow_port != 'any':
 
                                             non_white_pattern = re.compile(
@@ -857,6 +847,28 @@ def FIREWALL_RULES_TEXT():
 
                                                 if "object-group service" in acl:
                                                     flow_port = str(cols[10])
+
+                                        if acl.count('object-group') == 3 and "object-group service" not in acl and flow_port != 'any':
+                                            flow_protocol = "object"
+                                            flow_port = cols[5]
+
+                                            result = FIREWALL_ASA_OBJECT_SERVICE_TABLE.query.filter_by(
+                                                db_serial_number=serial_number, db_object_name=flow_port).first()
+
+                                            if result is not None:
+                                                flow_protocol = 'ERROR'
+                                                flow_port = 'ERROR'
+
+                                            sleep(20)
+
+                                        if "lt" not in acl:
+                                            if "gt" not in acl:
+                                                if "eq" not in acl:
+                                                    if "neq" not in acl:
+                                                        if "range" not in acl:
+                                                            if "object-group service" not in acl:
+                                                                if acl.count('object-group') != 3:
+                                                                    flow_port = 'any'
 
                                         col_count += 1
                                 if "remark" in acl and ("permit" or "deny") in acl:
