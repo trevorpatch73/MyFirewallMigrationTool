@@ -399,11 +399,6 @@ def FIREWALL_RULES_TEXT():
                 db_serial_number=serial_number).first()
             if inventory is not None:
                 if object_input_txt is not None:
-                    print("----------------------")
-                    print("RAW STRING: Objects")
-                    print("----------------------")
-                    print(object_input_txt)
-                    sleep(5)
 
                     built_string = ""
                     row_count = 0
@@ -415,12 +410,6 @@ def FIREWALL_RULES_TEXT():
                         else:
                             built_string = built_string + "\n" + row
                         row_count += 1
-
-                    print("----------------------")
-                    print("BUILT STRING: Objects")
-                    print("----------------------")
-                    print(object_input_txt)
-                    sleep(5)
 
                     objects = built_string.split("!")
                     object_count = 0
@@ -568,7 +557,6 @@ def FIREWALL_RULES_TEXT():
                                             )
                                             db.session.add(entry)
                                             db.session.commit()
-                                            sleep(1)
                                             signal = 'info'
                                             flash(
                                                 f'New Network Object, {object_name}:{object_range}:{object_ip}:{object_subnet}, for firewall, {serial_number}')
@@ -664,7 +652,6 @@ def FIREWALL_RULES_TEXT():
 
                                                 db.session.add(entry)
                                                 db.session.commit()
-                                                sleep(1)
                                                 signal = 'info'
                                                 flash(
                                                     f'New Service Object, {object_name}:{object_range}:{object_protocol}:{object_port}, for firewall, {serial_number}')
@@ -715,7 +702,6 @@ def FIREWALL_RULES_TEXT():
                                 )
                                 db.session.add(entry)
                                 db.session.commit()
-                                sleep(1)
                                 signal = 'info'
                                 flash(
                                     f'New Access-Group, {acl_name}:{rule_direction}:{nameif_zone}, for firewall, {serial_number}')
@@ -813,7 +799,7 @@ def FIREWALL_RULES_TEXT():
                                             flow_port = (str(cols[col_count+1]) +
                                                          "-" + str(cols[col_count+2]))
 
-                                        if ("object-group" or "object-group service") in acl and flow_port != 'any':
+                                        if ("object-group" or "object-group service") in acl and flow_port != 'any' and len(cols) > 8:
 
                                             non_white_pattern = re.compile(
                                                 r'(\w+)')
@@ -841,7 +827,7 @@ def FIREWALL_RULES_TEXT():
                                                 if "object-group service" in acl:
                                                     flow_port = str(cols[11])
 
-                                            if "any" in (cols[5] or cols[7]):
+                                            if "any" in (cols[5] or cols[7]) and len(cols) > 9:
                                                 if "object-group" in acl and "object-group service" not in acl:
                                                     flow_port = str(cols[9])
 
@@ -858,8 +844,6 @@ def FIREWALL_RULES_TEXT():
                                             if result is not None:
                                                 flow_protocol = 'ERROR'
                                                 flow_port = 'ERROR'
-
-                                            sleep(20)
 
                                         if "lt" not in acl:
                                             if "gt" not in acl:
@@ -999,82 +983,85 @@ def FIREWALL_RULES_TEXT():
                                                 col_count += 1
 
                                         object_count += 1
+                                if acl_name is not None and source_ip is not None and source_subnet is not None and destination_ip is not None and destination_subnet is not None and flow_protocol is not None and flow_port is not None and firewall_action is not None:
+                                    print(
+                                        f'ACL NAME IS MAPPED TOO:           {acl_name}')
+                                    print(
+                                        f'SOURCE_IP IS MAPPED TOO:          {source_ip}')
+                                    print(
+                                        f'SOURCE_SUBNET IS MAPPED TOO:      {source_subnet}')
+                                    print(
+                                        f'DESTINATION_IP IS MAPPED TOO:     {destination_ip}')
+                                    print(
+                                        f'DESTINATION_SUBNET IS MAPPED TOO: {destination_subnet}')
+                                    print(
+                                        f'PROTOCOL IS MAPPED TOO:           {flow_protocol}')
+                                    print(
+                                        f'PORT IS MAPPED TOO:               {flow_port}')
+                                    print(
+                                        f'ACTION IS MAPPED TOO:             {firewall_action}')
 
-                                print(
-                                    f'ACL NAME IS MAPPED TOO:           {acl_name}')
-                                print(
-                                    f'SOURCE_IP IS MAPPED TOO:          {source_ip}')
-                                print(
-                                    f'SOURCE_SUBNET IS MAPPED TOO:      {source_subnet}')
-                                print(
-                                    f'DESTINATION_IP IS MAPPED TOO:     {destination_ip}')
-                                print(
-                                    f'DESTINATION_SUBNET IS MAPPED TOO: {destination_subnet}')
-                                print(
-                                    f'PROTOCOL IS MAPPED TOO:           {flow_protocol}')
-                                print(
-                                    f'PORT IS MAPPED TOO:               {flow_port}')
-                                print(
-                                    f'ACTION IS MAPPED TOO:             {firewall_action}')
+                                    db_access_groups = FIREWALL_ASA_ACCESS_GROUP_TABLE.query.filter_by(
+                                        db_serial_number=serial_number, db_acl_name=acc_grp).first()
 
-                                db_access_groups = FIREWALL_ASA_ACCESS_GROUP_TABLE.query.filter_by(
-                                    db_serial_number=serial_number, db_acl_name=acc_grp).first()
+                                    print(db_access_groups)
 
-                                print(db_access_groups)
+                                    if db_access_groups is None:
+                                        print("-------------------")
+                                        print("-------------------")
+                                        print("-------------------")
+                                        print("ERROR")
+                                        print("-------------------")
+                                        print("-------------------")
+                                        print("-------------------")
 
-                                if db_access_groups is None:
-                                    print("-------------------")
-                                    print("-------------------")
-                                    print("-------------------")
-                                    print("ERROR")
-                                    print("-------------------")
-                                    print("-------------------")
-                                    print("-------------------")
-                                    sleep(2)
+                                    else:
+                                        direction = db_access_groups.db_rule_direction
+
+                                        if direction == 'in':
+                                            source_zone = db_access_groups.db_nameif_zone
+                                            destination_zone = 'any'
+                                        elif direction == 'out':
+                                            source_zone = 'any'
+                                            destination_zone = db_access_groups.db_nameif_zone
+                                        else:
+                                            source_zone = 'any'
+                                            destination_zone = 'any'
+
+                                    result = FIREWALL_ASA_RULES_ACL_TABLE.query.filter_by(
+                                        db_serial_number=serial_number, db_acl_name=acl_name, db_source_ip=source_ip, db_destination_ip=destination_ip, db_flow_protocol=flow_protocol, db_flow_port=flow_port).first()
+
+                                    if result is None:
+                                        entry = FIREWALL_ASA_RULES_ACL_TABLE(
+                                            db_acl_name=acl_name,
+                                            db_acl_description='ASA RULE MIGRATED VIA PRESIDIO AUTOMATION',
+                                            db_source_ip=source_ip,
+                                            db_source_subnet=source_subnet,
+                                            db_source_zone=source_zone,
+                                            db_destination_ip=destination_ip,
+                                            db_destination_subnet=destination_subnet,
+                                            db_destination_zone=destination_zone,
+                                            db_flow_protocol=flow_protocol,
+                                            db_flow_port=flow_port,
+                                            db_firewall_action=firewall_action,
+                                            db_state='new',
+                                            db_serial_number=serial_number
+                                        )
+                                        db.session.add(entry)
+                                        db.session.commit()
+                                        signal = 'info'
+                                        flash(
+                                            f'New Firewall Rule, {acl_name}, added for firewall, {serial_number}')
 
                                 else:
-                                    direction = db_access_groups.db_rule_direction
-
-                                    if direction == 'in':
-                                        source_zone = db_access_groups.db_nameif_zone
-                                        destination_zone = 'any'
-                                    elif direction == 'out':
-                                        source_zone = 'any'
-                                        destination_zone = db_access_groups.db_nameif_zone
-                                    else:
-                                        source_zone = 'any'
-                                        destination_zone = 'any'
-
-                                result = FIREWALL_ASA_RULES_ACL_TABLE.query.filter_by(
-                                    db_serial_number=serial_number, db_acl_name=acl_name, db_source_ip=source_ip, db_destination_ip=destination_ip, db_flow_protocol=flow_protocol, db_flow_port=flow_port).first()
-
-                                print(result)
-
-                                if result is None:
-                                    entry = FIREWALL_ASA_RULES_ACL_TABLE(
-                                        db_acl_name=acl_name,
-                                        db_acl_description='ASA RULE MIGRATED VIA PRESIDIO AUTOMATION',
-                                        db_source_ip=source_ip,
-                                        db_source_subnet=source_subnet,
-                                        db_source_zone=source_zone,
-                                        db_destination_ip=destination_ip,
-                                        db_destination_subnet=destination_subnet,
-                                        db_destination_zone=destination_zone,
-                                        db_flow_protocol=flow_protocol,
-                                        db_flow_port=flow_port,
-                                        db_firewall_action=firewall_action,
-                                        db_state='new',
-                                        db_serial_number=serial_number
-                                    )
-                                    db.session.add(entry)
-                                    db.session.commit()
-                                    signal = 'info'
+                                    print(
+                                        'THE FOLLOWING ACL COULD NOT BE PROCESSED:')
+                                    print(f'{acl}')
+                                    signal = 'error'
                                     flash(
-                                        f'New Firewall Rule, {acl_name}, added for firewall, {serial_number}')
+                                        f'THE FOLLOWING ACL COULD NOT BE PROCESSED: {acl}')
 
-                                acl_count += 1
-                                sleep(1)
-
+                            acl_count += 1
             else:
                 signal = 'error'
                 flash(
